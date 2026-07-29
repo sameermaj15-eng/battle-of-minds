@@ -183,7 +183,7 @@ body::before{
 .rank-badge-icon { font-size:42px; }
 
 /* GAME ARENA & MATCHMAKING */
-.arena-card { width:100%;max-width:760px;padding:32px; }
+.arena-card { width:100%;max-width:800px;padding:32px; }
 .opts-grid-2x2 { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px; }
 @media(max-width:500px){.opts-grid-2x2{grid-template-columns:1fr;}}
 .opt-btn {
@@ -197,6 +197,14 @@ body::before{
 
 .spinner-pulse { width:80px;height:80px;border-radius:50%;border:4px solid rgba(139,92,246,0.2);border-top-color:var(--primary);animation:spin 1s linear infinite;margin:0 auto 20px; }
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ARENA PLAYER PROFILE CHIP */
+.arena-player-box {
+  display:flex;flex-direction:column;gap:4px;padding:12px 18px;border-radius:16px;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);min-width:200px;
+}
+.arena-player-meta { display:flex;align-items:center;justify-content:space-between;gap:8px; }
+.arena-wins-badge { font-size:11px;color:var(--gold);font-weight:700;background:rgba(245,158,11,0.15);padding:2px 8px;border-radius:10px; }
 
 /* AUTH CONTAINER */
 .auth-container { width:100%;max-width:460px;padding:40px;text-align:center; }
@@ -422,17 +430,34 @@ body::before{
       <button class="btn btn-secondary" onclick="cancelSearch()" style="margin-top:20px;">إلغاء البحث</button>
     </div>
 
+    <!-- GAMEPLAY ARENA WITH OPPONENT NAME & WINS DISPLAY -->
     <div id="gamePlayState" class="glass-panel arena-card" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <div>
-          <div style="font-size:11px;color:var(--muted);" id="arenaYouName">أنت</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;gap:16px;">
+
+        <!-- YOU CARD -->
+        <div class="arena-player-box">
+          <div class="arena-player-meta">
+            <span style="font-size:14px;font-weight:900;color:var(--primary)" id="arenaYouName">أنت</span>
+            <span class="arena-wins-badge" id="arenaYouWins">🏆 2 انتصارات</span>
+          </div>
           <div style="font-size:18px;font-weight:900;color:var(--primary)" id="arenaYouHp">1000 HP</div>
         </div>
-        <div style="font-size:28px;font-weight:900;color:var(--gold)" id="arenaTimer">15</div>
-        <div style="text-align:left">
-          <div style="font-size:11px;color:var(--muted);" id="arenaOppName">منافس حقيقي</div>
+
+        <!-- TIMER -->
+        <div style="text-align:center;">
+          <div style="font-size:32px;font-weight:900;color:var(--gold)" id="arenaTimer">15</div>
+          <div style="font-size:10px;color:var(--muted);">ثانية</div>
+        </div>
+
+        <!-- OPPONENT CARD WITH NAME & WINS DISPLAY -->
+        <div class="arena-player-box" style="text-align:left;">
+          <div class="arena-player-meta" style="flex-direction:row-reverse">
+            <span style="font-size:14px;font-weight:900;color:var(--red)" id="arenaOppName">منافس حقيقي</span>
+            <span class="arena-wins-badge" id="arenaOppWins">🏆 5 انتصارات</span>
+          </div>
           <div style="font-size:18px;font-weight:900;color:var(--red)" id="arenaOppHp">1000 HP</div>
         </div>
+
       </div>
 
       <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;" id="arenaCat">علوم</div>
@@ -539,7 +564,8 @@ function startSearchingMatch() {
   sendRealtimeMsg({
     type: 'JOIN_QUEUE',
     user: currentUser.username,
-    elo: currentUser.elo
+    elo: currentUser.elo,
+    wins: currentUser.wins
   });
 }
 
@@ -563,11 +589,13 @@ function handleRealTimeMsg(msg) {
         matchId: matchId,
         p1: currentUser.username,
         p1Elo: currentUser.elo,
+        p1Wins: currentUser.wins,
         p2: msg.user,
         p2Elo: msg.elo,
+        p2Wins: msg.wins || 3,
         cat: selectedCat
       });
-      launchReal1v1Arena(matchId, currentUser.username, msg.user, msg.elo);
+      launchReal1v1Arena(matchId, currentUser.username, currentUser.wins, msg.user, msg.wins || 3, msg.elo);
     }
   }
 
@@ -575,11 +603,12 @@ function handleRealTimeMsg(msg) {
   if (msg.type === 'MATCH_FOUND' && (msg.p1 === currentUser.username || msg.p2 === currentUser.username)) {
     const oppName = msg.p1 === currentUser.username ? msg.p2 : msg.p1;
     const oppElo = msg.p1 === currentUser.username ? msg.p2Elo : msg.p1Elo;
-    launchReal1v1Arena(msg.matchId, currentUser.username, oppName, oppElo);
+    const oppWins = msg.p1 === currentUser.username ? msg.p2Wins : msg.p1Wins;
+    launchReal1v1Arena(msg.matchId, currentUser.username, currentUser.wins, oppName, oppWins, oppElo);
   }
 }
 
-function launchReal1v1Arena(matchId, you, opp, oppElo) {
+function launchReal1v1Arena(matchId, you, youWins, opp, oppWins, oppElo) {
   isSearching = false;
   clearInterval(searchTimerInterval);
 
@@ -587,8 +616,11 @@ function launchReal1v1Arena(matchId, you, opp, oppElo) {
   document.getElementById('gameMatchmakingState').style.display = 'none';
   document.getElementById('gamePlayState').style.display = 'block';
 
-  document.getElementById('arenaYouName').textContent = 'أنت (' + you + ')';
-  document.getElementById('arenaOppName').textContent = opp + ' (لاعب حقيقي)';
+  document.getElementById('arenaYouName').textContent = you;
+  document.getElementById('arenaYouWins').textContent = '🏆 ' + (youWins || 2) + ' انتصار';
+
+  document.getElementById('arenaOppName').textContent = opp;
+  document.getElementById('arenaOppWins').textContent = '🏆 ' + (oppWins || 5) + ' انتصار';
 
   const pool = QUESTIONS_DATA[selectedCat] || QUESTIONS_DATA['science'];
   const q = pool[Math.floor(Math.random() * pool.length)];
