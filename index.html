@@ -1,802 +1,1240 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>⚔️ نزال Lor - لعبة الأسئلة التنافسية 1v1</title>
-<meta name="description" content="نزال Lor - لعبة الأسئلة التنافسية 1v1 بين لاعبين حقيقيين. اصعد العرش التصنيفي!">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #070714;
-  --bg-card: rgba(18, 18, 42, 0.7);
-  --bg-card-hover: rgba(26, 26, 60, 0.85);
-  --border: rgba(139, 92, 246, 0.15);
-  --border-glow: rgba(139, 92, 246, 0.4);
-  --primary: #8b5cf6;
-  --primary-dark: #6d28d9;
-  --primary-glow: rgba(139,92,246,0.4);
-  --cyan: #06b6d4;
-  --cyan-glow: rgba(6,182,212,0.4);
-  --gold: #f59e0b;
-  --gold-glow: rgba(245,158,11,0.4);
-  --red: #ef4444;
-  --green: #10b981;
-  --text: #e2e8f0;
-  --muted: #64748b;
-  --iron: #94a3b8;
-  --bronze: #cd7f32;
-  --silver: #c0c0c0;
-  --platinum: #00d4ff;
-  --diamond: #3b82f6;
-  --master: #a855f7;
-  --grandmaster: #ef4444;
-  --challenger: #f59e0b;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نزال Lor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
+    <style>
+        :root {
+            --bg-color: #070714;
+            --primary: #8b5cf6;
+            --secondary: #06b6d4;
+            --accent: #f59e0b;
+            --text: #ffffff;
+            --text-muted: #9ca3af;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --success: #10b981;
+            --danger: #ef4444;
+        }
 
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:100%;height:100%;overflow-x:hidden;font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);}
-body::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:
-    radial-gradient(ellipse at 15% 15%, rgba(139,92,246,0.2) 0%, transparent 60%),
-    radial-gradient(ellipse at 85% 85%, rgba(6,182,212,0.15) 0%, transparent 60%),
-    radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 50%);
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
 
-.app-viewport { display:flex;flex-direction:column;min-height:100vh;position:relative;z-index:1; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
+        }
 
-/* HEADER */
-.app-header {
-  height:72px;background:rgba(10,10,26,0.9);backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;padding:0 28px;
-  position:sticky;top:0;z-index:100;
-}
-.brand-logo { display:flex;align-items:center;gap:12px;cursor:pointer; }
-.logo-icon {
-  width:44px;height:44px;background:linear-gradient(135deg,#7c3aed,#06b6d4);
-  border-radius:12px;display:flex;align-items:center;justify-content:center;
-  font-size:24px;box-shadow:0 0 20px var(--primary-glow);
-}
-.logo-text-wrap { display:flex;flex-direction:column; }
-.logo-title { font-size:22px;font-weight:900;letter-spacing:-0.5px;line-height:1.1;background:linear-gradient(135deg,#fff,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
-.logo-sub { font-size:10px;color:var(--muted);letter-spacing:1px; }
+        .screen {
+            display: none;
+            min-height: 100vh;
+            padding: 2rem;
+            animation: fadeIn 0.4s ease-out;
+        }
 
-.header-user-chip {
-  display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.04);
-  border:1px solid var(--border);padding:6px 16px;border-radius:30px;cursor:pointer;
-}
-.user-chip-avatar { width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:16px; }
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-/* BUTTONS */
-.btn {
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:12px 26px;border-radius:14px;border:none;cursor:pointer;
-  font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;
-  transition:all 0.25s ease;position:relative;overflow:hidden;
-}
-.btn-primary { background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;box-shadow:0 0 25px var(--primary-glow); }
-.btn-primary:hover { box-shadow:0 0 35px var(--primary-glow);transform:translateY(-2px); }
-.btn-hero {
-  background:linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4);
-  color:#fff;font-size:20px;padding:16px 48px;border-radius:18px;
-  box-shadow:0 0 35px var(--gold-glow);
-}
-.btn-hero:hover { transform:scale(1.03);box-shadow:0 0 50px var(--gold-glow); }
-.btn-secondary { background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text); }
-.btn-secondary:hover { background:rgba(255,255,255,0.1);border-color:var(--border-glow); }
-.btn-danger { background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-/* SCREENS */
-.screen { display:none;padding:24px;flex:1;flex-direction:column;align-items:center;justify-content:center; }
-.screen.active { display:flex;animation:fadeIn 0.3s ease; }
-@keyframes fadeIn { from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)} }
+        /* Glassmorphism Classes */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
 
-/* GLASS CARDS */
-.glass-panel {
-  background:var(--bg-card);border:1px solid var(--border);
-  backdrop-filter:blur(20px);border-radius:20px;transition:all 0.25s;
-}
-.glass-panel:hover { border-color:var(--border-glow); }
+        h1, h2, h3 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+        }
 
-/* DASHBOARD MAIN LAYOUT (Matching Image 2) */
-.dashboard-grid {
-  display:grid;grid-template-columns:260px 1fr 300px;
-  gap:20px;width:100%;max-width:1400px;margin:0 auto;padding-bottom:30px;
-}
-@media(max-width:1100px){.dashboard-grid{grid-template-columns:1fr 300px;}}
-@media(max-width:768px){.dashboard-grid{grid-template-columns:1fr;}}
+        .gradient-text {
+            background: linear-gradient(to right, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
 
-/* LEFT COLUMN: LEADERBOARD */
-.lb-widget { padding:20px;display:flex;flex-direction:column;gap:14px; }
-.lb-tabs { display:flex;gap:4px;background:rgba(0,0,0,0.3);padding:3px;border-radius:10px; }
-.lb-tab { flex:1;padding:6px;font-size:11px;font-weight:700;text-align:center;border-radius:8px;cursor:pointer;color:var(--muted); }
-.lb-tab.active { background:var(--primary);color:#fff; }
-.lb-list { display:flex;flex-direction:column;gap:8px; }
-.lb-row-item {
-  display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;
-  background:rgba(255,255,255,0.03);border:1px solid transparent;transition:all 0.2s;
-}
-.lb-row-item:hover { background:rgba(255,255,255,0.06);border-color:var(--border); }
-.lb-row-rank { width:24px;font-weight:900;text-align:center;font-size:14px; }
+        /* Forms & Inputs */
+        .form-group {
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
 
-/* CENTER COLUMN: STATS + HERO + CATEGORIES */
-.center-column { display:flex;flex-direction:column;gap:20px; }
-.stats-top-bar { display:grid;grid-template-columns:repeat(4,1fr);gap:12px; }
-.stat-box { padding:14px;text-align:center;border-radius:16px;background:rgba(255,255,255,0.03);border:1px solid var(--border); }
-.stat-box-val { font-size:22px;font-weight:900; }
-.stat-box-lbl { font-size:11px;color:var(--muted);margin-top:2px; }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
 
-.vs-hero-card {
-  padding:36px;text-align:center;position:relative;overflow:hidden;
-  background:radial-gradient(circle at center, rgba(139,92,246,0.15) 0%, rgba(13,13,34,0.9) 70%);
-  border:1px solid var(--border-glow);display:flex;flex-direction:column;align-items:center;gap:16px;
-}
-.vs-title { font-size:24px;font-weight:900; }
-.vs-sub { font-size:13px;color:var(--muted);max-width:400px; }
-.vs-illustration { display:flex;align-items:center;gap:28px;margin:10px 0; }
-.vs-warrior { font-size:56px;filter:drop-shadow(0 0 20px rgba(139,92,246,0.6)); }
-.vs-text-big { font-size:42px;font-weight:900;color:var(--gold);text-shadow:0 0 25px var(--gold-glow); }
+        input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--card-border);
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
 
-.categories-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:12px; }
-@media(max-width:900px){.categories-grid{grid-template-columns:repeat(2,1fr);}}
-.cat-card-item {
-  padding:16px;border-radius:16px;background:rgba(255,255,255,0.03);
-  border:1px solid var(--border);cursor:pointer;transition:all 0.22s;text-align:center;
-}
-.cat-card-item:hover { transform:translateY(-4px);border-color:var(--primary);box-shadow:0 10px 30px var(--primary-glow); }
-.cat-card-item.active { border-color:var(--primary);background:rgba(139,92,246,0.15); }
-.cat-icon-lg { font-size:32px;margin-bottom:8px; }
-.cat-title-lg { font-size:14px;font-weight:700; }
-.cat-count-sub { font-size:10px;color:var(--muted);margin-top:2px; }
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+        }
 
-.trust-badges-bar { display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px; }
-.trust-item { padding:10px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid var(--border);text-align:center;font-size:11px;color:var(--muted); }
+        button {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
 
-/* RIGHT COLUMN: RANK PROGRESS & RANK TIERS TABLE */
-.right-column { display:flex;flex-direction:column;gap:20px; }
-.current-rank-card { padding:24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px; }
-.rank-crest-3d { font-size:68px;filter:drop-shadow(0 0 30px var(--primary-glow));animation:floatAnim 3s ease-in-out infinite; }
-@keyframes floatAnim { 0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)} }
-.rank-title-big { font-size:24px;font-weight:900; }
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
 
-.rank-tiers-table { padding:18px;display:flex;flex-direction:column;gap:8px; }
-.tier-row { display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;font-size:12px;background:rgba(255,255,255,0.02); }
-.tier-row.current { background:rgba(139,92,246,0.18);border:1px solid var(--primary); }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+        }
 
-/* RANK HIERARCHY PAGE (Matching Image 1 & 5) */
-.ranks-page-wrap { width:100%;max-width:1300px;margin:0 auto;text-align:center;padding:20px 0; }
-.ranks-page-header { margin-bottom:30px; }
-.rank-track-arrow { display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:13px;margin-bottom:20px;padding:0 20px; }
-.rank-track-line { flex:1;height:2px;background:linear-gradient(90deg,var(--iron),var(--challenger));margin:0 16px; }
-.ranks-cards-grid { display:grid;grid-template-columns:repeat(9,1fr);gap:10px; }
-@media(max-width:1100px){.ranks-cards-grid{grid-template-columns:repeat(3,1fr);}}
-@media(max-width:600px){.ranks-cards-grid{grid-template-columns:1fr;}}
-.rank-tier-card {
-  padding:20px 10px;border-radius:18px;background:rgba(18,18,42,0.8);
-  border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:10px;
-  transition:all 0.25s;
-}
-.rank-tier-card:hover { transform:translateY(-6px);border-color:var(--primary);box-shadow:0 12px 30px var(--primary-glow); }
-.rank-badge-icon { font-size:42px; }
+        .btn-danger {
+            background: linear-gradient(45deg, #b91c1c, #ef4444);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid var(--card-border);
+        }
 
-/* GAME ARENA & MATCHMAKING */
-.arena-card { width:100%;max-width:820px;padding:32px; }
-.opts-grid-2x2 { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px; }
-@media(max-width:500px){.opts-grid-2x2{grid-template-columns:1fr;}}
-.opt-btn {
-  padding:16px;border-radius:14px;border:2px solid var(--border);
-  background:rgba(255,255,255,0.04);cursor:pointer;font-family:'Cairo',sans-serif;
-  font-size:15px;font-weight:700;color:var(--text);transition:all 0.2s;text-align:right;
-}
-.opt-btn:hover:not(:disabled) { background:rgba(139,92,246,0.15);border-color:var(--primary); }
-.opt-btn.correct { background:rgba(16,185,129,0.2);border-color:var(--green);color:var(--green); }
-.opt-btn.wrong { background:rgba(239,68,68,0.2);border-color:var(--red);color:var(--red); }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
 
-.spinner-pulse { width:80px;height:80px;border-radius:50%;border:4px solid rgba(139,92,246,0.2);border-top-color:var(--primary);animation:spin 1s linear infinite;margin:0 auto 20px; }
-@keyframes spin{to{transform:rotate(360deg)}}
+        .error-msg {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
 
-/* ARENA PLAYER PROFILE CHIP */
-.arena-player-box {
-  display:flex;flex-direction:column;gap:4px;padding:12px 18px;border-radius:16px;
-  background:rgba(255,255,255,0.03);border:1px solid var(--border);min-width:220px;
-}
-.arena-player-meta { display:flex;align-items:center;justify-content:space-between;gap:8px; }
-.arena-wins-badge { font-size:11px;color:var(--gold);font-weight:700;background:rgba(245,158,11,0.15);padding:2px 8px;border-radius:10px; }
+        /* Nav */
+        .nav-bar {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+        }
 
-/* AUTH CONTAINER */
-.auth-container { width:100%;max-width:460px;padding:40px;text-align:center; }
-.auth-crest { font-size:64px;margin-bottom:12px;filter:drop-shadow(0 0 30px var(--primary-glow)); }
-.auth-tabs { display:flex;gap:6px;background:rgba(0,0,0,0.4);padding:4px;border-radius:14px;margin:24px 0; }
-.auth-tab { flex:1;padding:10px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;color:var(--muted); }
-.auth-tab.active { background:var(--primary);color:#fff;box-shadow:0 0 15px var(--primary-glow); }
+        .nav-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
 
-.form-group { margin-bottom:16px;text-align:right; }
-.form-label { font-size:12px;color:var(--muted);margin-bottom:6px;display:block; }
-.input-wrap { position:relative; }
-.input-icon { position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--muted); }
-.input-control {
-  width:100%;padding:14px 44px 14px 16px;border-radius:14px;
-  background:rgba(255,255,255,0.05);border:1px solid var(--border);
-  color:var(--text);font-family:'Cairo',sans-serif;font-size:14px;outline:none;
-  transition:border-color 0.2s, box-shadow 0.2s;
-}
-.input-control:focus { border-color:var(--primary);box-shadow:0 0 18px var(--primary-glow); }
+        .nav-links button {
+            width: auto;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+        }
 
-/* TOAST & OVERLAY */
-.toast-notice { position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(15,15,35,0.95);border:1px solid var(--border);padding:14px 28px;border-radius:14px;font-weight:700;z-index:999;backdrop-filter:blur(20px);box-shadow:0 10px 30px rgba(0,0,0,0.5); }
-</style>
+        /* Dashboard */
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .vs-card {
+            text-align: center;
+            max-width: 400px;
+            margin: 0 auto 2rem;
+            padding: 3rem 2rem;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), inset 0 0 20px rgba(139, 92, 246, 0.1);
+        }
+
+        .vs-card h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-battle {
+            font-size: 1.5rem;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            background: linear-gradient(45deg, var(--accent), #d97706);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+
+        /* Categories */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+
+        .category-card {
+            text-align: center;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .category-card.selected {
+            border-color: var(--primary);
+            background: rgba(139, 92, 246, 0.2);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+        }
+
+        /* Leaderboard */
+        .leaderboard {
+            width: 100%;
+        }
+
+        .lb-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--card-border);
+            transition: background 0.2s;
+        }
+
+        .lb-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .lb-rank {
+            width: 40px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .lb-name {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lb-score {
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        /* Ranks */
+        .ranks-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .rank-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        
+        .rank-item.active-rank {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+        }
+
+        .rank-icon {
+            font-size: 2rem;
+        }
+
+        /* Matchmaking */
+        .loader {
+            width: 80px;
+            height: 80px;
+            border: 5px solid var(--card-border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Gameplay */
+        .arena {
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .players-hud {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border-radius: 1rem;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--card-border);
+        }
+        
+        .player-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .player-score {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .timer-bar {
+            width: 100%;
+            height: 10px;
+            background: var(--card-border);
+            border-radius: 5px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: var(--secondary);
+            width: 100%;
+            transition: width 1s linear;
+        }
+
+        .question-box {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            min-height: 80px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .option-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            padding: 1.5rem;
+            font-size: 1.2rem;
+            border-radius: 0.5rem;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            background: rgba(139, 92, 246, 0.1);
+        }
+        
+        .option-btn.correct {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+        
+        .option-btn.wrong {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            .screen {
+                padding: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<div class="app-viewport">
-
-  <!-- HEADER -->
-  <header class="app-header">
-    <div class="brand-logo" onclick="showScreen('dashboard')">
-      <div class="logo-icon">⚔️</div>
-      <div class="logo-text-wrap">
-        <span class="logo-title">نزال Lor</span>
-        <span class="logo-sub">BATTLE OF MINDS</span>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:14px;">
-      <button class="btn btn-secondary" onclick="showScreen('ranksPage')">🛡️ نظام الرتب</button>
-      <div class="header-user-chip" id="userHeaderChip" onclick="showScreen('auth')">
-        <div class="user-chip-avatar" id="hAvatar">🎯</div>
-        <div>
-          <div style="font-size:13px;font-weight:700;" id="hUser">لاعب جديد</div>
-          <div style="font-size:10px;color:var(--gold);" id="hElo">1037 ELO</div>
-        </div>
-      </div>
-      <button class="btn btn-secondary" id="authBtn" onclick="showScreen('auth')">تسجيل الدخول / حساب جديد</button>
-    </div>
-  </header>
-
-  <!-- SCREEN 1: DASHBOARD (Default view matching Image 2!) -->
-  <div class="screen active" id="screenDashboard">
-    <div class="dashboard-grid">
-
-      <!-- LEFT COLUMN: LEADERBOARD -->
-      <div class="glass-panel lb-widget">
-        <div style="font-size:14px;font-weight:900;display:flex;align-items:center;gap:6px;">
-          <span>🏆 المتصدرون</span>
-        </div>
-        <div class="lb-tabs">
-          <div class="lb-tab active">كل الوقت</div>
-          <div class="lb-tab">هذا الشهر</div>
-          <div class="lb-tab">هذا الأسبوع</div>
-        </div>
-        <div class="lb-list" id="lbList"></div>
-      </div>
-
-      <!-- CENTER COLUMN: HERO + CATEGORIES -->
-      <div class="center-column">
-        <!-- TOP STATS BAR -->
-        <div class="stats-top-bar">
-          <div class="stat-box"><div class="stat-box-val" id="dElo" style="color:var(--gold)">1037</div><div class="stat-box-lbl">تقييم ELO</div></div>
-          <div class="stat-box"><div class="stat-box-val" id="dW" style="color:var(--green)">2</div><div class="stat-box-lbl">فوز</div></div>
-          <div class="stat-box"><div class="stat-box-val" id="dL" style="color:var(--red)">1</div><div class="stat-box-lbl">هزيمة</div></div>
-          <div class="stat-box"><div class="stat-box-val" id="dWR" style="color:var(--cyan)">67%</div><div class="stat-box-lbl">نسبة الفوز</div></div>
-        </div>
-
-        <!-- VS HERO CARD -->
-        <div class="glass-panel vs-hero-card">
-          <div class="vs-title">هل أنت مستعد للتحدي؟</div>
-          <div class="vs-sub">اختر معلوماتك، تفوق على خصمك، واصعد إلى القمة!</div>
-          <div class="vs-illustration">
-            <div class="vs-warrior">🔮</div>
-            <div class="vs-text-big">VS</div>
-            <div class="vs-warrior">⚔️</div>
-          </div>
-          <button class="btn btn-hero" onclick="startSearchingMatch()">🎮 ابدأ المعركة (1v1 حقيقي)</button>
-        </div>
-
-        <!-- CATEGORIES GRID -->
-        <div style="font-size:15px;font-weight:900;margin-top:6px;">اختر فئة الأسئلة</div>
-        <div class="categories-grid" id="categoriesGrid"></div>
-
-        <!-- TRUST BADGES BAR -->
-        <div class="trust-badges-bar">
-          <div class="trust-item">🛡️ لعب نزيه (نظام ضد الغش)</div>
-          <div class="trust-item">⚡ أسئلة متنوعة ومتجددة</div>
-          <div class="trust-item">👑 نظام التصنيف العادل</div>
-          <div class="trust-item">👥 تحديات 1v1 حقيقية 100%</div>
-        </div>
-      </div>
-
-      <!-- RIGHT COLUMN: RANK PROGRESS & TIERS -->
-      <div class="right-column">
-        <div class="glass-panel current-rank-card">
-          <div style="font-size:12px;color:var(--muted);font-weight:700;">👑 رتبتك الحالية</div>
-          <div class="rank-crest-3d" id="dRankCrest">🔷</div>
-          <div class="rank-title-big" id="dRankTitle">الماسي</div>
-          <div style="font-size:14px;color:var(--gold);font-weight:900;" id="dRankElo">ELO 1037</div>
-          <div style="width:100%;margin-top:10px;">
-            <div style="display:flex;justify-space-between;font-size:10px;color:var(--muted);margin-bottom:4px;">
-              <span>التقدم للرتبة التالية</span>
-              <span id="dRankPct">86%</span>
+    <!-- AUTH SCREEN -->
+    <div id="screen-auth" class="screen active">
+        <div class="glass-card" style="width: 100%; max-width: 400px; margin: auto;">
+            <h1 class="gradient-text">نزال Lor</h1>
+            
+            <div id="login-form">
+                <h2>تسجيل الدخول</h2>
+                <div class="form-group">
+                    <label>اسم المستخدم</label>
+                    <input type="text" id="login-username" dir="ltr">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="login-password" dir="ltr">
+                </div>
+                <div class="error-msg" id="login-error"></div>
+                <button class="btn-primary" onclick="login()">دخول</button>
+                <p style="text-align: center; margin-top: 1rem; cursor: pointer; color: var(--secondary);" onclick="toggleAuth()">لا تملك حساب؟ سجل الآن</p>
             </div>
-            <div style="height:6px;border-radius:3px;background:rgba(255,255,255,0.08);overflow:hidden;">
-              <div id="dRankBar" style="height:100%;width:86%;background:linear-gradient(90deg,var(--primary),var(--cyan));"></div>
+
+            <div id="register-form" style="display: none;">
+                <h2>حساب جديد</h2>
+                <div class="form-group">
+                    <label>اسم المستخدم</label>
+                    <input type="text" id="reg-username" dir="ltr">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="reg-password" dir="ltr">
+                </div>
+                <div class="form-group">
+                    <label>تأكيد كلمة المرور</label>
+                    <input type="password" id="reg-confirm" dir="ltr">
+                </div>
+                <div class="error-msg" id="reg-error"></div>
+                <button class="btn-primary" onclick="register()">تسجيل</button>
+                <p style="text-align: center; margin-top: 1rem; cursor: pointer; color: var(--secondary);" onclick="toggleAuth()">لديك حساب؟ سجل الدخول</p>
             </div>
-          </div>
         </div>
-
-        <!-- TIERS TABLE -->
-        <div class="glass-panel rank-tiers-table">
-          <div style="font-size:13px;font-weight:900;margin-bottom:8px;">🏆 الدرجات (من الأدنى إلى الأعلى)</div>
-          <div id="rankTiersRows"></div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- SCREEN 2: AUTH MODAL (Matching Image 3 & 4) -->
-  <div class="screen" id="screenAuth">
-    <div class="glass-panel auth-container">
-      <div class="auth-crest">⚔️</div>
-      <h1 style="font-size:32px;font-weight:900;">نزال Lor</h1>
-      <p style="font-size:13px;color:var(--muted);margin-top:2px;">لعبة الأسئلة التنافسية · BATTLE OF MINDS</p>
-
-      <div class="auth-tabs">
-        <div class="auth-tab active" id="tabLoginBtn" onclick="switchAuthTab('login')">تسجيل الدخول</div>
-        <div class="auth-tab" id="tabRegBtn" onclick="switchAuthTab('register')">إنشاء حساب</div>
-      </div>
-
-      <!-- LOGIN FORM -->
-      <form id="loginForm" onsubmit="handleLogin(event)">
-        <div class="form-group">
-          <label class="form-label">اسم المستخدم</label>
-          <div class="input-wrap">
-            <span class="input-icon">👤</span>
-            <input class="input-control" id="loginUsername" type="text" placeholder="أدخل اسم المستخدم..." required>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">كلمة المرور</label>
-          <div class="input-wrap">
-            <span class="input-icon">🔒</span>
-            <input class="input-control" id="loginPassword" type="password" placeholder="أدخل كلمة المرور..." required>
-          </div>
-        </div>
-        <button class="btn btn-primary btn-hero" style="width:100%;margin-top:10px;font-size:16px;padding:14px;" type="submit">تسجيل الدخول ➔</button>
-      </form>
-
-      <!-- REGISTER FORM -->
-      <form id="regForm" onsubmit="handleRegister(event)" style="display:none">
-        <div class="form-group">
-          <label class="form-label">اسم المستخدم (Unique Username)</label>
-          <div class="input-wrap">
-            <span class="input-icon">👤</span>
-            <input class="input-control" id="regUsername" type="text" placeholder="اختر اسم مستخدم فريد..." required minlength="3" maxlength="18">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">كلمة المرور</label>
-          <div class="input-wrap">
-            <span class="input-icon">🔒</span>
-            <input class="input-control" id="regPassword" type="password" placeholder="كلمة المرور..." required minlength="4">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">تأكيد كلمة المرور</label>
-          <div class="input-wrap">
-            <span class="input-icon">🔒</span>
-            <input class="input-control" id="regPasswordConfirm" type="password" placeholder="تأكيد كلمة المرور..." required minlength="4">
-          </div>
-        </div>
-        <button class="btn btn-primary btn-hero" style="width:100%;margin-top:10px;font-size:16px;padding:14px;" type="submit">إنشاء حساب 👤+</button>
-      </form>
-
-      <button class="btn btn-secondary" onclick="showScreen('dashboard')" style="margin-top:20px;">الاستمرار كزائر ←</button>
-    </div>
-  </div>
-
-  <!-- SCREEN 3: RANK HIERARCHY PAGE (Matching Image 1 & 5) -->
-  <div class="screen" id="screenRanksPage">
-    <div class="ranks-page-wrap">
-      <div class="ranks-page-header">
-        <div style="font-size:64px;filter:drop-shadow(0 0 30px var(--primary-glow))">⚔️</div>
-        <h1 style="font-size:38px;font-weight:900;">نزال Lor</h1>
-        <div style="font-size:16px;color:var(--gold);font-weight:700;margin-top:4px;">❖ نظام الرتب ❖</div>
-        <p style="font-size:13px;color:var(--muted);margin-top:4px;">كل انتصار يقربك من القمة</p>
-      </div>
-
-      <div class="rank-track-arrow">
-        <span>الأضعف</span>
-        <div class="rank-track-line"></div>
-        <span>الأقوى</span>
-      </div>
-
-      <div class="ranks-cards-grid" id="ranksCardsGrid"></div>
-
-      <button class="btn btn-secondary" onclick="showScreen('dashboard')" style="margin-top:30px;">← الرجوع للوحة اللعبة</button>
-    </div>
-  </div>
-
-  <!-- SCREEN 4: STRICT REALTIME 1V1 MATCHMAKING & ARENA -->
-  <div class="screen" id="screenGame">
-    <div id="gameMatchmakingState" style="text-align:center;">
-      <div class="spinner-pulse"></div>
-      <h2 style="font-size:24px;font-weight:900;" id="searchTitle">جاري البحث عن لاعب حقيقي متصل...</h2>
-      <p style="color:var(--muted);font-size:13px;margin-top:6px;max-width:400px;margin-left:auto;margin-right:auto;" id="searchSub">
-        ننتظر انضمام لاعب حقيقي آخر في القائمة... اضغط (ابدأ المعركة) في الحساب الآخر لتدخلا سوياً!
-      </p>
-      <div style="font-size:24px;font-weight:900;color:var(--gold);margin-top:16px;" id="searchTimer">00:00</div>
-      <button class="btn btn-secondary" onclick="cancelSearch()" style="margin-top:20px;">إلغاء البحث</button>
     </div>
 
-    <!-- GAMEPLAY ARENA WITH OPPONENT NAME & WINS DISPLAY -->
-    <div id="gamePlayState" class="glass-panel arena-card" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;gap:16px;">
-
-        <!-- YOU CARD -->
-        <div class="arena-player-box">
-          <div class="arena-player-meta">
-            <span style="font-size:14px;font-weight:900;color:var(--primary)" id="arenaYouName">أنت</span>
-            <span class="arena-wins-badge" id="arenaYouWins">🏆 2 انتصارات</span>
-          </div>
-          <div style="font-size:18px;font-weight:900;color:var(--primary)" id="arenaYouHp">1000 HP</div>
+    <!-- DASHBOARD SCREEN -->
+    <div id="screen-dashboard" class="screen">
+        <div class="nav-bar glass-card">
+            <div class="nav-brand gradient-text">نزال Lor</div>
+            <div class="nav-links">
+                <button class="btn-secondary" onclick="showScreen('screen-profile')">الملف الشخصي</button>
+                <button class="btn-secondary" onclick="showScreen('screen-ranks')">الرتب</button>
+                <button class="btn-danger" onclick="logout()">خروج</button>
+            </div>
         </div>
 
-        <!-- TIMER -->
-        <div style="text-align:center;">
-          <div style="font-size:32px;font-weight:900;color:var(--gold)" id="arenaTimer">15</div>
-          <div style="font-size:10px;color:var(--muted);">ثانية</div>
+        <div class="glass-card" style="width: 100%; max-width: 800px;">
+            <div class="stats-bar" id="dash-stats">
+                <!-- Stats populated by JS -->
+            </div>
+
+            <div class="vs-card glass-card">
+                <h2>جاهز للتحدي؟</h2>
+                <p style="margin-bottom: 2rem; color: var(--text-muted);">اختر فئة (اختياري) وابحث عن خصم</p>
+                <button class="btn-battle" onclick="startMatchmaking()">ابدأ المعركة ⚔️</button>
+            </div>
+
+            <h3 style="text-align: right;">الفئات المفضلة</h3>
+            <div class="categories-grid" id="categories-container">
+                <!-- Categories populated by JS -->
+            </div>
+
+            <h3 style="text-align: right; margin-top: 2rem;">أفضل اللاعبين</h3>
+            <div class="leaderboard glass-card" id="dashboard-leaderboard">
+                <!-- Leaderboard populated by JS -->
+            </div>
         </div>
-
-        <!-- OPPONENT CARD WITH NAME & WINS DISPLAY -->
-        <div class="arena-player-box" style="text-align:left;">
-          <div class="arena-player-meta" style="flex-direction:row-reverse">
-            <span style="font-size:14px;font-weight:900;color:var(--red)" id="arenaOppName">منافس حقيقي</span>
-            <span class="arena-wins-badge" id="arenaOppWins">🏆 5 انتصارات</span>
-          </div>
-          <div style="font-size:18px;font-weight:900;color:var(--red)" id="arenaOppHp">1000 HP</div>
-        </div>
-
-      </div>
-
-      <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;" id="arenaCat">علوم</div>
-      <div style="font-size:20px;font-weight:900;margin:12px 0 24px;" id="arenaQText">سؤال المباراة...</div>
-
-      <div class="opts-grid-2x2" id="arenaOpts"></div>
     </div>
-  </div>
 
-</div>
+    <!-- PROFILE SCREEN -->
+    <div id="screen-profile" class="screen">
+        <div class="glass-card" style="width: 100%; max-width: 600px; margin: auto;">
+            <button class="btn-secondary" style="width: auto; margin-bottom: 1rem;" onclick="showScreen('screen-dashboard')">← عودة</button>
+            
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div id="prof-icon" style="font-size: 4rem; margin-bottom: 1rem;">⚪</div>
+                <h1 id="prof-username" class="gradient-text" style="margin-bottom: 0;">Username</h1>
+                <div id="prof-rankname" style="color: var(--accent); font-weight: bold; margin-top: 0.5rem;">الحديد</div>
+            </div>
 
-<script>
-const RANKS = [
-  { id:1, name:'الحديد',      icon:'⚪', num:'I',    min:0,    max:399,  cls:'iron' },
-  { id:2, name:'البرونزي',   icon:'🥉', num:'II',   min:400,  max:799,  cls:'bronze' },
-  { id:3, name:'الفضي',      icon:'⚔️', num:'III',  min:800,  max:1199, cls:'silver' },
-  { id:4, name:'الذهبي',     icon:'👑', num:'IV',   min:1200, max:1599, cls:'gold' },
-  { id:5, name:'البلاتيني',  icon:'🩵', num:'V',    min:1600, max:1999, cls:'platinum' },
-  { id:6, name:'الماسي',     icon:'🔷', num:'VI',   min:2000, max:2499, cls:'diamond' },
-  { id:7, name:'الماستر',    icon:'🔮', num:'VII',  min:2500, max:2999, cls:'master' },
-  { id:8, name:'جراند ماستر',icon:'🔴', num:'VIII', min:3000, max:3499, cls:'grandmaster' },
-  { id:9, name:'تحدي',       icon:'⚡', num:'IX',   min:3500, max:Infinity, cls:'challenger' }
-];
+            <div class="stats-bar glass-card" style="margin-bottom: 2rem; background: rgba(0,0,0,0.2);">
+                <div class="stat-item">
+                    <div class="stat-value" id="prof-elo">0</div>
+                    <div class="stat-label">نقاط ELO</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="prof-winrate">0%</div>
+                    <div class="stat-label">نسبة الفوز</div>
+                </div>
+            </div>
 
-const CATEGORIES = [
-  { id:'science',  name:'العلوم',      icon:'🧬', count:'1200 سؤال' },
-  { id:'sports',   name:'الرياضة',     icon:'⚽', count:'980 سؤال' },
-  { id:'history',  name:'التاريخ',     icon:'🏛️', count:'1100 سؤال' },
-  { id:'general',  name:'ثقافة عامة',   icon:'🌍', count:'1500 سؤال' },
-  { id:'anime',    name:'أنمي',        icon:'🎨', count:'850 سؤال' },
-  { id:'onepiece', name:'ون بيس',      icon:'🏴‍☠️', count:'600 سؤال' },
-  { id:'hxh',      name:'هانتر x هانتر',icon:'🎣', count:'500 سؤال' }
-];
+            <div class="lb-row"><span>المباريات الملعوبة</span> <strong id="prof-games">0</strong></div>
+            <div class="lb-row"><span>الانتصارات</span> <strong id="prof-wins" style="color: var(--success);">0</strong></div>
+            <div class="lb-row"><span>الهزائم</span> <strong id="prof-losses" style="color: var(--danger);">0</strong></div>
+            <div class="lb-row"><span>أفضل سلسلة فوز</span> <strong id="prof-beststreak" style="color: var(--accent);">0</strong></div>
+            
+            <button class="btn-danger" style="margin-top: 2rem;" onclick="logout()">تسجيل الخروج</button>
+        </div>
+    </div>
 
-const QUESTIONS_DATA = {
-  science: [
-    {q:"ما هو الرمز الكيميائي للماء؟",opts:["H₂O","CO₂","NaCl","O₂"],c:0},
-    {q:"كم عدد عظام جسم الإنسان البالغ؟",opts:["206","200","212","198"],c:0}
-  ],
-  sports: [
-    {q:"من فاز بكأس العالم 2022 في قطر؟",opts:["الأرجنتين","فرنسا","البرازيل","المغرب"],c:0}
-  ],
-  history: [
-    {q:"متى بدأت الحرب العالمية الأولى؟",opts:["1914","1912","1916","1918"],c:0}
-  ],
-  general: [
-    {q:"كم عدد ألوان قوس قزح؟",opts:["7","6","8","5"],c:0}
-  ],
-  anime: [
-    {q:"ما اسم دفتر الموت في أنمي Death Note؟",opts:["Death Note","Death Book","Grimoire","Shinigami Note"],c:0}
-  ],
-  onepiece: [
-    {q:"ما هو اسم حلم لوفي الرئيسي؟",opts:["ملك القراصنة","أقوى سياف","حاكم البحار","مكتشف العالم"],c:0}
-  ],
-  hxh: [
-    {q:"من هو صديق غون المفضل وعضو عائلة زولديك؟",opts:["كيلوا","كورابيكا","يوريو","هيسوكا"],c:0}
-  ]
-};
+    <!-- RANKS SCREEN -->
+    <div id="screen-ranks" class="screen">
+        <div class="glass-card" style="width: 100%; max-width: 800px; margin: auto;">
+            <button class="btn-secondary" style="width: auto; margin-bottom: 1rem;" onclick="showScreen('screen-dashboard')">← عودة</button>
+            <h2>نظام الرتب</h2>
+            <div class="ranks-list" id="ranks-container">
+                <!-- Ranks populated by JS -->
+            </div>
+        </div>
+    </div>
 
-let currentUser = { username: 'لاعب_' + Math.floor(100+Math.random()*900), elo: 1037, wins: 2, losses: 1 };
-let selectedCat = 'science';
+    <!-- MATCHMAKING SCREEN -->
+    <div id="screen-matchmaking" class="screen">
+        <div class="glass-card" style="width: 100%; max-width: 500px; margin: auto; text-align: center;">
+            <h2 class="gradient-text">البحث عن خصم...</h2>
+            <div class="loader"></div>
+            <div style="font-size: 2rem; font-weight: bold; margin: 1rem 0;" id="mm-timer">00:00</div>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;" id="mm-status">جاري البحث في قاعدة البيانات...</p>
+            <button class="btn-danger" onclick="cancelMatchmaking()">إلغاء</button>
+        </div>
+    </div>
 
-// REALTIME ENGINE WITH SHARED QUEUE SYNCHRONIZATION
-let searchTimerInterval = null;
-let queuePollInterval = null;
-let roomPollInterval = null;
-let searchSeconds = 0;
-let isSearching = false;
-let activeMatchRoomId = null;
-let activeMatchData = null;
+    <!-- GAMEPLAY SCREEN -->
+    <div id="screen-game" class="screen">
+        <div class="arena">
+            <div class="players-hud">
+                <div class="player-info">
+                    <div id="p1-name" style="font-weight: bold;">أنا</div>
+                    <div id="p1-score" class="player-score">0</div>
+                    <div id="p1-streak" style="color: var(--accent); font-size: 0.9rem;">🔥 0</div>
+                </div>
+                <div style="display: flex; flex-direction: column; justify-content: center; font-weight: bold; color: var(--text-muted);">
+                    VS
+                </div>
+                <div class="player-info">
+                    <div id="p2-name" style="font-weight: bold;">الخصم</div>
+                    <div id="p2-score" class="player-score">0</div>
+                    <div id="p2-streak" style="color: var(--accent); font-size: 0.9rem;">🔥 0</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 1rem; color: var(--text-muted);">
+                السؤال <span id="q-current">1</span> من <span id="q-total">5</span>
+            </div>
 
-window.addEventListener('load', () => {
-  renderCategories();
-  renderRanksPage();
-  renderRankTiersRows();
+            <div class="timer-bar">
+                <div class="timer-fill" id="game-timer"></div>
+            </div>
 
-  const sess = localStorage.getItem('lor_user_session');
-  if (sess) {
-    const db = JSON.parse(localStorage.getItem('lor_users') || '{}');
-    if (db[sess.toLowerCase()]) currentUser = db[sess.toLowerCase()];
-  }
-  updateDashboardUI();
-  showScreen('dashboard');
-});
+            <div class="glass-card">
+                <div class="question-box" id="question-text">
+                    جاري تحميل السؤال...
+                </div>
+                <div class="options-grid" id="options-container">
+                    <!-- Buttons populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
 
-// SHARED QUEUE PAIRING SYSTEM IN LOCALSTORAGE
-function startSearchingMatch() {
-  isSearching = true;
-  searchSeconds = 0;
-  showScreen('game');
-  document.getElementById('gameMatchmakingState').style.display = 'block';
-  document.getElementById('gamePlayState').style.display = 'none';
+    <!-- RESULTS SCREEN -->
+    <div id="screen-result" class="screen">
+        <div class="glass-card" style="width: 100%; max-width: 500px; margin: auto; text-align: center;">
+            <h1 id="res-title" style="font-size: 3rem; margin-bottom: 1rem;">انتهت المعركة</h1>
+            <div id="res-elo-change" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 2rem;">+25 ELO</div>
+            
+            <div class="stats-bar" style="margin-bottom: 2rem;">
+                <div class="stat-item">
+                    <div class="stat-value" id="res-my-score">0</div>
+                    <div class="stat-label">نقاطك</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="res-opp-score">0</div>
+                    <div class="stat-label">نقاط الخصم</div>
+                </div>
+            </div>
 
-  clearInterval(searchTimerInterval);
-  searchTimerInterval = setInterval(() => {
-    searchSeconds++;
-    const m = String(Math.floor(searchSeconds / 60)).padStart(2, '0');
-    const s = String(searchSeconds % 60).padStart(2, '0');
-    document.getElementById('searchTimer').textContent = `${m}:${s}`;
-  }, 1000);
+            <button class="btn-primary" onclick="showScreen('screen-dashboard')">العودة للرئيسية</button>
+        </div>
+    </div>
 
-  // Add user to global queue
-  let queue = JSON.parse(localStorage.getItem('lor_shared_queue') || '[]');
-  // Remove stale entries
-  queue = queue.filter(q => q.username !== currentUser.username && (Date.now() - q.time) < 30000);
-  queue.push({
-    username: currentUser.username,
-    elo: currentUser.elo,
-    wins: currentUser.wins,
-    time: Date.now(),
-    cat: selectedCat
-  });
-  localStorage.setItem('lor_shared_queue', JSON.stringify(queue));
+    <script>
+        // --- DATA & CONFIG ---
+        const RANKS = [
+            { name: "الحديد", min: 0, max: 399, icon: "⚪" },
+            { name: "البرونزي", min: 400, max: 799, icon: "🥉" },
+            { name: "الفضي", min: 800, max: 1199, icon: "⚔️" },
+            { name: "الذهبي", min: 1200, max: 1599, icon: "👑" },
+            { name: "البلاتيني", min: 1600, max: 1999, icon: "🩵" },
+            { name: "الماسي", min: 2000, max: 2499, icon: "🔷" },
+            { name: "الماستر", min: 2500, max: 2999, icon: "🔮" },
+            { name: "جراند ماستر", min: 3000, max: 3499, icon: "🔴" },
+            { name: "المتحدي", min: 3500, max: 99999, icon: "⚡" }
+        ];
 
-  // Poll queue every 400ms to check for pairing
-  clearInterval(queuePollInterval);
-  queuePollInterval = setInterval(pollSharedQueue, 400);
-}
+        const CATEGORIES = [
+            "العلوم", "الرياضة", "التاريخ", "ثقافة عامة", "أنمي", "ون بيس", "هانتر x هانتر"
+        ];
 
-function pollSharedQueue() {
-  if (!isSearching) return;
+        const QUESTIONS = {
+            "العلوم": [
+                { q: "ما هو الرمز الكيميائي للماء؟", a: "H₂O", options: ["CO₂", "O₂", "H₂O", "NaCl"] },
+                { q: "كم عدد عظام جسم الإنسان البالغ؟", a: "206", options: ["206", "198", "212", "300"] },
+                { q: "ما هو أكبر كوكب في المجموعة الشمسية؟", a: "المشتري", options: ["زحل", "المشتري", "الأرض", "المريخ"] },
+                { q: "ما هو العنصر الأكثر وفرة في الغلاف الجوي؟", a: "النيتروجين", options: ["الأكسجين", "النيتروجين", "الهيدروجين", "الكربون"] },
+                { q: "ما هي سرعة الضوء تقريباً؟", a: "300,000 كم/ث", options: ["300,000 كم/ث", "150,000 كم/ث", "1,000,000 كم/ث", "30,000 كم/ث"] }
+            ],
+            "الرياضة": [
+                { q: "من فاز بكأس العالم 2022؟", a: "الأرجنتين", options: ["فرنسا", "البرازيل", "الأرجنتين", "المغرب"] },
+                { q: "كم عدد لاعبي فريق كرة القدم؟", a: "11", options: ["9", "10", "11", "12"] },
+                { q: "في أي دولة نشأت رياضة الكريكيت؟", a: "إنجلترا", options: ["الهند", "أستراليا", "إنجلترا", "جنوب أفريقيا"] },
+                { q: "من هو أسرع رجل في العالم؟", a: "يوسين بولت", options: ["يوسين بولت", "تايسون غاي", "جاستن غاتلين", "أسافا باول"] },
+                { q: "كم شوط في مباراة كرة السلة NBA؟", a: "4 أشواط", options: ["شوطين", "3 أشواط", "4 أشواط", "5 أشواط"] }
+            ],
+            "التاريخ": [
+                { q: "متى بدأت الحرب العالمية الأولى؟", a: "1914", options: ["1910", "1914", "1918", "1939"] },
+                { q: "من بنى الأهرامات؟", a: "المصريون القدماء", options: ["الرومان", "الإغريق", "المصريون القدماء", "الفراعنة الفضائيون"] },
+                { q: "متى سقطت الدولة العثمانية؟", a: "1922", options: ["1918", "1922", "1924", "1914"] },
+                { q: "من اكتشف أمريكا؟", a: "كريستوفر كولومبوس", options: ["فاسكو دا غاما", "كريستوفر كولومبوس", "ماركو بولو", "ماجلان"] },
+                { q: "في أي عام هبط الإنسان على القمر؟", a: "1969", options: ["1965", "1969", "1972", "1960"] }
+            ],
+            "ثقافة عامة": [
+                { q: "كم عدد ألوان قوس قزح؟", a: "7", options: ["5", "6", "7", "8"] },
+                { q: "ما هي أكبر قارة في العالم؟", a: "آسيا", options: ["أفريقيا", "آسيا", "أمريكا الشمالية", "أوروبا"] },
+                { q: "ما هي عاصمة اليابان؟", a: "طوكيو", options: ["بكين", "سيول", "طوكيو", "أوساكا"] },
+                { q: "كم عدد أيام السنة الكبيسة؟", a: "366", options: ["364", "365", "366", "367"] },
+                { q: "ما هو أطول نهر في العالم؟", a: "نهر النيل", options: ["نهر الأمازون", "نهر النيل", "نهر المسيسيبي", "نهر اليانغتسي"] }
+            ],
+            "أنمي": [
+                { q: "ما اسم دفتر الموت في أنمي Death Note؟", a: "Death Note", options: ["Life Note", "Death Note", "Kill Note", "Dark Note"] },
+                { q: "من هو بطل أنمي ناروتو؟", a: "ناروتو أوزوماكي", options: ["ساسكي أوتشيها", "ناروتو أوزوماكي", "كاكاشي هاتاكي", "إيتاتشي"] },
+                { q: "ما اسم عالم أنمي Attack on Titan؟", a: "عالم داخل الأسوار", options: ["عالم الشياطين", "عالم داخل الأسوار", "عالم الجزر", "عالم السحر"] },
+                { q: "ما هو اسم Quirk لبطل My Hero Academia؟", a: "One For All", options: ["All For One", "One For All", "Explosion", "Half-Cold Half-Hot"] },
+                { q: "من هو خالق أنمي Dragon Ball؟", a: "أكيرا تورياما", options: ["إييتشيرو أودا", "ماساشي كيشيموتو", "أكيرا تورياما", "هاجيمي إيساياما"] }
+            ],
+            "ون بيس": [
+                { q: "ما هو حلم لوفي؟", a: "ملك القراصنة", options: ["أعظم سياف", "ملك القراصنة", "إيجاد الأزرق الكامل", "رسم خريطة العالم"] },
+                { q: "ما اسم سفينة قبعة القش الأولى؟", a: "Going Merry", options: ["Thousand Sunny", "Going Merry", "Moby Dick", "Red Force"] },
+                { q: "ما هي فاكهة الشيطان الخاصة بلوفي؟", a: "غومو غومو نو مي", options: ["ميرا ميرا نو مي", "غومو غومو نو مي", "أوبي أوبي نو مي", "يامي يامي نو مي"] },
+                { q: "من هو طباخ طاقم قبعة القش؟", a: "سانجي", options: ["زورو", "نامي", "سانجي", "أوسوب"] },
+                { q: "ما اسم السيف الأسود لميهوك؟", a: "يورو", options: ["شوسوي", "يورو", "إنما", "وادو إيتشيمونجي"] }
+            ],
+            "هانتر x هانتر": [
+                { q: "من هو صديق غون المفضل؟", a: "كيلوا", options: ["كورابيكا", "ليوريو", "كيلوا", "هيسوكا"] },
+                { q: "ما اسم نظام القوة في هانتر؟", a: "نين", options: ["تشاكرا", "نين", "كي", "هاكي"] },
+                { q: "ما هو هدف كورابيكا؟", a: "استعادة عيون قبيلة الكوردا", options: ["أن يصبح صياداً", "استعادة عيون قبيلة الكوردا", "إيجاد والده", "تدمير العناكب"] },
+                { q: "من هو رئيس فرقة العناكب؟", a: "كرولو لوسيلفر", options: ["أوفوغين", "فيتان", "كرولو لوسيلفر", "هيسوكا"] },
+                { q: "ما اسم امتحان الهنتر؟", a: "امتحان الهنتر", options: ["امتحان الشونين", "امتحان الهنتر", "امتحان النين", "امتحان القوة"] }
+            ]
+        };
 
-  let queue = JSON.parse(localStorage.getItem('lor_shared_queue') || '[]');
-  // Filter active valid entries
-  queue = queue.filter(q => (Date.now() - q.time) < 35000);
-  localStorage.setItem('lor_shared_queue', JSON.stringify(queue));
+        // --- GUN.JS SETUP ---
+        const gun = Gun([
+            'https://gun-manhattan.herokuapp.com/gun',
+            'https://gun-us.herokuapp.com/gun',
+            'https://peer.wallie.io/gun'
+        ]);
+        const db = gun.get('nzal_lor_prod_v2'); // isolated namespace
+        const usersDB = db.get('users');
+        const queueDB = db.get('match_queue');
+        const roomsDB = db.get('rooms');
 
-  // Find another player in queue
-  const otherPlayer = queue.find(q => q.username !== currentUser.username);
-  if (otherPlayer) {
-    // PAIR FOUND! Create Match Room!
-    const matchId = 'room_' + Math.min(currentUser.username.localeCompare(otherPlayer.username), 1) + '_' + Date.now();
-    
-    // Remove both from queue
-    queue = queue.filter(q => q.username !== currentUser.username && q.username !== otherPlayer.username);
-    localStorage.setItem('lor_shared_queue', JSON.stringify(queue));
+        // --- STATE ---
+        let currentUser = null;
+        let selectedCategory = null;
+        let matchmakingTimer = null;
+        let matchmakingSeconds = 0;
+        let currentRoomId = null;
+        let gameTimer = null;
+        let currentQuestionIndex = 0;
+        let roomQuestions = [];
+        let myScore = 0;
+        let oppScore = 0;
+        let myStreak = 0;
+        let oppStreak = 0;
+        let answeredCurrent = false;
 
-    // Create room state
-    const roomState = {
-      matchId: matchId,
-      p1: currentUser.username,
-      p1Wins: currentUser.wins,
-      p1Elo: currentUser.elo,
-      p1Hp: 1000,
-      p2: otherPlayer.username,
-      p2Wins: otherPlayer.wins || 3,
-      p2Elo: otherPlayer.elo || 1037,
-      p2Hp: 1000,
-      cat: selectedCat,
-      qIdx: 0,
-      answers: {}
-    };
-    localStorage.setItem('lor_active_room_' + matchId, JSON.stringify(roomState));
-    localStorage.setItem('lor_player_room_' + currentUser.username, matchId);
-    localStorage.setItem('lor_player_room_' + otherPlayer.username, matchId);
+        // --- UTILS ---
+        function getRank(elo) {
+            for (let i = RANKS.length - 1; i >= 0; i--) {
+                if (elo >= RANKS[i].min) return RANKS[i];
+            }
+            return RANKS[0];
+        }
 
-    enterMatchArena(roomState);
-  } else {
-    // Check if another player already created a room for us
-    const existingRoomId = localStorage.getItem('lor_player_room_' + currentUser.username);
-    if (existingRoomId) {
-      const roomData = JSON.parse(localStorage.getItem('lor_active_room_' + existingRoomId) || 'null');
-      if (roomData) {
-        enterMatchArena(roomData);
-      }
-    }
-  }
-}
+        async function hashPassword(password) {
+            const msgBuffer = new TextEncoder().encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
 
-function cancelSearch() {
-  isSearching = false;
-  clearInterval(searchTimerInterval);
-  clearInterval(queuePollInterval);
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if (id === 'screen-dashboard') initDashboard();
+            if (id === 'screen-profile') initProfile();
+            if (id === 'screen-ranks') initRanks();
+        }
 
-  let queue = JSON.parse(localStorage.getItem('lor_shared_queue') || '[]');
-  queue = queue.filter(q => q.username !== currentUser.username);
-  localStorage.setItem('lor_shared_queue', JSON.stringify(queue));
-  localStorage.removeItem('lor_player_room_' + currentUser.username);
+        function toggleAuth() {
+            const login = document.getElementById('login-form');
+            const reg = document.getElementById('register-form');
+            if (login.style.display === 'none') {
+                login.style.display = 'block';
+                reg.style.display = 'none';
+            } else {
+                login.style.display = 'none';
+                reg.style.display = 'block';
+            }
+        }
 
-  showScreen('dashboard');
-}
+        function showError(id, msg) {
+            const el = document.getElementById(id);
+            el.innerText = msg;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
 
-function enterMatchArena(roomState) {
-  isSearching = false;
-  clearInterval(searchTimerInterval);
-  clearInterval(queuePollInterval);
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
 
-  activeMatchRoomId = roomState.matchId;
-  activeMatchData = roomState;
+        // --- AUTH ---
+        async function register() {
+            const user = document.getElementById('reg-username').value.trim();
+            const pass = document.getElementById('reg-password').value;
+            const conf = document.getElementById('reg-confirm').value;
 
-  document.getElementById('gameMatchmakingState').style.display = 'none';
-  document.getElementById('gamePlayState').style.display = 'block';
+            if (user.length < 3) return showError('reg-error', 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل');
+            if (pass.length < 4) return showError('reg-error', 'كلمة المرور يجب أن تكون 4 أحرف على الأقل');
+            if (pass !== conf) return showError('reg-error', 'كلمتا المرور غير متطابقتين');
 
-  const isP1 = roomState.p1 === currentUser.username;
-  const youName = isP1 ? roomState.p1 : roomState.p2;
-  const youWins = isP1 ? roomState.p1Wins : roomState.p2Wins;
+            const lowerUser = user.toLowerCase();
+            
+            usersDB.get(lowerUser).once(async (data) => {
+                if (data && data.password) {
+                    showError('reg-error', 'اسم المستخدم محجوز');
+                } else {
+                    const hash = await hashPassword(pass);
+                    const userData = {
+                        username: user,
+                        password: hash,
+                        elo: 400, // Start bronze
+                        wins: 0,
+                        losses: 0,
+                        games: 0,
+                        bestStreak: 0
+                    };
+                    usersDB.get(lowerUser).put(userData);
+                    
+                    currentUser = userData;
+                    currentUser.id = lowerUser;
+                    localStorage.setItem('nzal_session', JSON.stringify({id: lowerUser, hash}));
+                    showScreen('screen-dashboard');
+                }
+            });
+        }
 
-  const oppName = isP1 ? roomState.p2 : roomState.p1;
-  const oppWins = isP1 ? roomState.p2Wins : roomState.p1Wins;
+        async function login() {
+            const user = document.getElementById('login-username').value.trim();
+            const pass = document.getElementById('login-password').value;
+            
+            if (!user || !pass) return showError('login-error', 'الرجاء إدخال البيانات');
+            
+            const lowerUser = user.toLowerCase();
+            const hash = await hashPassword(pass);
 
-  document.getElementById('arenaYouName').textContent = youName;
-  document.getElementById('arenaYouWins').textContent = '🏆 ' + (youWins || 2) + ' انتصار';
+            usersDB.get(lowerUser).once((data) => {
+                if (data && data.password === hash) {
+                    currentUser = data;
+                    currentUser.id = lowerUser;
+                    localStorage.setItem('nzal_session', JSON.stringify({id: lowerUser, hash}));
+                    showScreen('screen-dashboard');
+                } else {
+                    showError('login-error', 'بيانات الدخول خاطئة');
+                }
+            });
+        }
 
-  document.getElementById('arenaOppName').textContent = oppName;
-  document.getElementById('arenaOppWins').textContent = '🏆 ' + (oppWins || 3) + ' انتصار';
+        function logout() {
+            localStorage.removeItem('nzal_session');
+            currentUser = null;
+            showScreen('screen-auth');
+        }
 
-  const pool = QUESTIONS_DATA[selectedCat] || QUESTIONS_DATA['science'];
-  const q = pool[roomState.qIdx % pool.length];
+        // --- INIT APP ---
+        window.onload = () => {
+            const session = JSON.parse(localStorage.getItem('nzal_session'));
+            if (session) {
+                usersDB.get(session.id).once((data) => {
+                    if (data && data.password === session.hash) {
+                        currentUser = data;
+                        currentUser.id = session.id;
+                        showScreen('screen-dashboard');
+                    } else {
+                        localStorage.removeItem('nzal_session');
+                    }
+                });
+            }
+            renderCategories();
+        };
 
-  document.getElementById('arenaCat').textContent = selectedCat.toUpperCase();
-  document.getElementById('arenaQText').textContent = q.q;
+        // --- DASHBOARD ---
+        function renderCategories() {
+            const cont = document.getElementById('categories-container');
+            cont.innerHTML = CATEGORIES.map(c => 
+                `<div class="category-card glass-card" onclick="selectCategory('${c}')" id="cat-${c}">
+                    ${c}
+                </div>`
+            ).join('');
+        }
 
-  const optsDiv = document.getElementById('arenaOpts');
-  optsDiv.innerHTML = '';
-  q.opts.forEach((opt, i) => {
-    const b = document.createElement('button');
-    b.className = 'opt-btn';
-    b.textContent = opt;
-    b.onclick = () => {
-      if (i === q.c) b.classList.add('correct'); else b.classList.add('wrong');
-      setTimeout(() => {
-        toast('🎉 انتهاء النزال المباشر بين ' + youName + ' و ' + oppName + '!');
-        localStorage.removeItem('lor_player_room_' + currentUser.username);
-        showScreen('dashboard');
-      }, 1800);
-    };
-    optsDiv.appendChild(b);
-  });
-}
+        function selectCategory(cat) {
+            if (selectedCategory) document.getElementById(`cat-${selectedCategory}`).classList.remove('selected');
+            if (selectedCategory === cat) {
+                selectedCategory = null;
+            } else {
+                selectedCategory = cat;
+                document.getElementById(`cat-${cat}`).classList.add('selected');
+            }
+        }
 
-function updateDashboardUI() {
-  document.getElementById('userHeaderChip').style.display = 'flex';
-  document.getElementById('hUser').textContent = currentUser.username;
-  document.getElementById('hElo').textContent = currentUser.elo + ' ELO';
-  document.getElementById('dElo').textContent = currentUser.elo;
-  document.getElementById('dW').textContent = currentUser.wins;
-  document.getElementById('dL').textContent = currentUser.losses;
-  const tot = currentUser.wins + currentUser.losses;
-  document.getElementById('dWR').textContent = tot > 0 ? Math.round((currentUser.wins/tot)*100) + '%' : '0%';
+        function initDashboard() {
+            if (!currentUser) return;
+            const rank = getRank(currentUser.elo);
+            const total = currentUser.wins + currentUser.losses;
+            const wr = total > 0 ? Math.round((currentUser.wins / total) * 100) : 0;
+            
+            document.getElementById('dash-stats').innerHTML = `
+                <div class="stat-item glass-card">
+                    <div class="stat-value">${rank.icon}</div>
+                    <div class="stat-label">${rank.name}</div>
+                </div>
+                <div class="stat-item glass-card">
+                    <div class="stat-value">${currentUser.elo}</div>
+                    <div class="stat-label">ELO</div>
+                </div>
+                <div class="stat-item glass-card">
+                    <div class="stat-value" style="color: var(--success);">${currentUser.wins}</div>
+                    <div class="stat-label">انتصارات</div>
+                </div>
+                <div class="stat-item glass-card">
+                    <div class="stat-value">${wr}%</div>
+                    <div class="stat-label">نسبة الفوز</div>
+                </div>
+            `;
 
-  const r = getRank(currentUser.elo);
-  document.getElementById('dRankCrest').textContent = r.icon;
-  document.getElementById('dRankTitle').textContent = r.name;
-  document.getElementById('dRankElo').textContent = 'ELO ' + currentUser.elo;
+            loadLeaderboard();
+        }
 
-  renderLeaderboard();
-  renderRankTiersRows();
-}
+        function loadLeaderboard() {
+            const lb = document.getElementById('dashboard-leaderboard');
+            lb.innerHTML = '<div style="text-align:center; padding:1rem;">جاري التحميل...</div>';
+            
+            let players = [];
+            
+            // Map over users to get top 10
+            usersDB.map().once((data, id) => {
+                if (data && data.username) {
+                    // Check if already in list to update
+                    const existingIdx = players.findIndex(p => p.id === id);
+                    if (existingIdx >= 0) players[existingIdx] = {id, ...data};
+                    else players.push({id, ...data});
+                    
+                    renderLeaderboard(players);
+                }
+            });
+            
+            setTimeout(() => {
+                if(players.length === 0) {
+                    lb.innerHTML = '<div style="text-align:center; padding:1rem; color: var(--text-muted);">لا يوجد لاعبون مسجلون بعد</div>';
+                }
+            }, 2000);
+        }
 
-function getRank(elo) {
-  for (let i = RANKS.length - 1; i >= 0; i--) if (elo >= RANKS[i].min) return RANKS[i];
-  return RANKS[0];
-}
+        function renderLeaderboard(players) {
+            players.sort((a, b) => (b.elo || 0) - (a.elo || 0));
+            const top10 = players.slice(0, 10);
+            
+            const html = top10.map((p, i) => {
+                const rank = getRank(p.elo || 400);
+                return `
+                <div class="lb-row">
+                    <div class="lb-rank">#${i+1}</div>
+                    <div class="lb-name">
+                        <span>${rank.icon}</span>
+                        <strong>${escapeHtml(p.username)}</strong>
+                    </div>
+                    <div class="lb-score">${p.elo || 400} ELO</div>
+                </div>`;
+            }).join('');
+            
+            document.getElementById('dashboard-leaderboard').innerHTML = html;
+        }
 
-function renderCategories() {
-  const grid = document.getElementById('categoriesGrid');
-  grid.innerHTML = '';
-  CATEGORIES.forEach(c => {
-    const item = document.createElement('div');
-    item.className = 'cat-card-item' + (c.id === selectedCat ? ' active' : '');
-    item.innerHTML = `<div class="cat-icon-lg">${c.icon}</div><div class="cat-title-lg">${c.name}</div><div class="cat-count-sub">${c.count}</div>`;
-    item.onclick = () => {
-      document.querySelectorAll('.cat-card-item').forEach(x => x.classList.remove('active'));
-      item.classList.add('active');
-      selectedCat = c.id;
-    };
-    grid.appendChild(item);
-  });
-}
+        // --- PROFILE & RANKS ---
+        function initProfile() {
+            const rank = getRank(currentUser.elo);
+            const total = currentUser.wins + currentUser.losses;
+            const wr = total > 0 ? Math.round((currentUser.wins / total) * 100) : 0;
+            
+            document.getElementById('prof-icon').innerText = rank.icon;
+            document.getElementById('prof-username').innerText = currentUser.username;
+            document.getElementById('prof-rankname').innerText = rank.name;
+            document.getElementById('prof-elo').innerText = currentUser.elo;
+            document.getElementById('prof-winrate').innerText = wr + '%';
+            document.getElementById('prof-games').innerText = total;
+            document.getElementById('prof-wins').innerText = currentUser.wins;
+            document.getElementById('prof-losses').innerText = currentUser.losses;
+            document.getElementById('prof-beststreak').innerText = currentUser.bestStreak || 0;
+        }
 
-function renderRankTiersRows() {
-  const container = document.getElementById('rankTiersRows');
-  container.innerHTML = '';
-  const currentR = getRank(currentUser.elo);
+        function initRanks() {
+            const myRank = getRank(currentUser.elo);
+            const html = RANKS.map(r => `
+                <div class="rank-item glass-card ${r.name === myRank.name ? 'active-rank' : ''}">
+                    <div class="rank-icon">${r.icon}</div>
+                    <div>
+                        <div style="font-weight: bold; font-size: 1.2rem;">${r.name}</div>
+                        <div style="color: var(--text-muted); font-size: 0.9rem;">
+                            ${r.min} - ${r.max >= 99999 ? '∞' : r.max}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('ranks-container').innerHTML = html;
+        }
 
-  RANKS.slice().reverse().forEach(r => {
-    const row = document.createElement('div');
-    const isCurrent = currentR.id === r.id;
-    row.className = 'tier-row' + (isCurrent ? ' current' : '');
-    row.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span>${r.icon}</span>
-        <span style="font-weight:700;">${r.name}</span>
-        ${isCurrent ? '<span style="font-size:9px;background:var(--primary);color:#fff;padding:2px 6px;border-radius:6px;">رتبتك الحالية</span>' : ''}
-      </div>
-      <div style="color:var(--muted);font-weight:700;">${r.min} - ${r.max === Infinity ? 'فأعلى' : r.max}</div>
-    `;
-    container.appendChild(row);
-  });
-}
+        // --- MATCHMAKING ---
+        let matchmakingListener = null;
 
-function renderRanksPage() {
-  const grid = document.getElementById('ranksCardsGrid');
-  grid.innerHTML = '';
-  RANKS.forEach(r => {
-    const card = document.createElement('div');
-    card.className = 'rank-tier-card';
-    card.innerHTML = `
-      <div class="rank-badge-icon">${r.icon}</div>
-      <div style="font-size:16px;font-weight:900;">${r.name}</div>
-      <div style="font-size:11px;color:var(--gold);">•••</div>
-      <div style="font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--muted);">${r.num}</div>
-    `;
-    grid.appendChild(card);
-  });
-}
+        function startMatchmaking() {
+            showScreen('screen-matchmaking');
+            matchmakingSeconds = 0;
+            document.getElementById('mm-timer').innerText = '00:00';
+            
+            matchmakingTimer = setInterval(() => {
+                matchmakingSeconds++;
+                const m = Math.floor(matchmakingSeconds / 60).toString().padStart(2, '0');
+                const s = (matchmakingSeconds % 60).toString().padStart(2, '0');
+                document.getElementById('mm-timer').innerText = `${m}:${s}`;
+            }, 1000);
 
-function renderLeaderboard() {
-  const db = JSON.parse(localStorage.getItem('lor_users') || '{}');
-  let users = Object.values(db);
-  if (users.length === 0) users = [{ username: 'Lor1', elo: 1037 }, { username: 'Lor12', elo: 1037 }, { username: 'Lor3', elo: 1037 }];
-  users.sort((a,b) => b.elo - a.elo);
+            // Put self in queue
+            const myQueueData = {
+                id: currentUser.id,
+                username: currentUser.username,
+                elo: currentUser.elo,
+                cat: selectedCategory || 'any',
+                timestamp: Date.now()
+            };
+            
+            queueDB.get(currentUser.id).put(myQueueData);
 
-  const container = document.getElementById('lbList');
-  container.innerHTML = '';
-  users.slice(0, 5).forEach((u, i) => {
-    const row = document.createElement('div');
-    row.className = 'lb-row-item';
-    row.innerHTML = `
-      <div class="lb-row-rank">${i+1}</div>
-      <div style="flex:1;font-size:13px;font-weight:700;">${u.username}</div>
-      <div style="font-size:12px;color:var(--gold);font-weight:900;">${u.elo} ELO</div>
-    `;
-    container.appendChild(row);
-  });
-}
+            // Listen for others
+            matchmakingListener = queueDB.map().on((data, id) => {
+                if (!data || id === currentUser.id) return;
+                
+                // Found someone!
+                const now = Date.now();
+                if (now - data.timestamp < 15000) { // Only match active queue members
+                    // Basic matching (ignoring category for simplicity in this demo, but could enforce)
+                    // If selectedCategory is set, try to match it, else any
+                    if (selectedCategory && data.cat !== 'any' && data.cat !== selectedCategory) return;
 
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById('screen' + id.charAt(0).toUpperCase() + id.slice(1));
-  if (el) el.classList.add('active');
-}
+                    // Sort IDs to create a consistent room ID
+                    const ids = [currentUser.id, id].sort();
+                    const roomId = `room_${ids[0]}_${ids[1]}`;
+                    
+                    // Remove self from queue
+                    queueDB.get(currentUser.id).put(null);
+                    if(matchmakingListener) matchmakingListener.off(); // stop listening
+                    
+                    setupGameRoom(roomId, data);
+                }
+            });
+        }
 
-function toast(msg) {
-  const t = document.createElement('div');
-  t.className = 'toast-notice'; t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 2400);
-}
-</script>
+        function cancelMatchmaking() {
+            clearInterval(matchmakingTimer);
+            queueDB.get(currentUser.id).put(null);
+            if(matchmakingListener) matchmakingListener.off();
+            showScreen('screen-dashboard');
+        }
+
+        window.addEventListener('beforeunload', () => {
+            if (currentUser) queueDB.get(currentUser.id).put(null);
+        });
+
+        // --- GAMEPLAY ---
+        let roomListener = null;
+
+        function generateRoomQuestions(cat) {
+            let selectedCat = cat !== 'any' ? cat : CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
+            let qs = [...QUESTIONS[selectedCat]];
+            shuffleArray(qs);
+            return qs.slice(0, 5).map(q => ({
+                q: q.q,
+                options: shuffleArray([...q.options]),
+                a: q.a
+            }));
+        }
+
+        let questionStarted = false;
+
+        function setupGameRoom(roomId, oppData) {
+            clearInterval(matchmakingTimer);
+            currentRoomId = roomId;
+            questionStarted = false;
+            
+            // Generate questions (deterministic based on room ID so both players get same)
+            // For simplicity, player 1 (lexicographically first ID) creates the questions
+            const isP1 = currentUser.id < oppData.id;
+            
+            if (isP1) {
+                roomQuestions = generateRoomQuestions(selectedCategory || 'any');
+                roomsDB.get(roomId).put({
+                    state: 'playing',
+                    questions: JSON.stringify(roomQuestions)
+                });
+                roomsDB.get(roomId).get(currentUser.id).put({ score: 0, streak: 0, ans: -1 });
+                roomsDB.get(roomId).get(oppData.id).put({ score: 0, streak: 0, ans: -1 });
+            } else {
+                roomQuestions = [];
+            }
+
+            // Init UI
+            document.getElementById('p1-name').innerText = currentUser.username;
+            document.getElementById('p2-name').innerText = oppData.username;
+            myScore = 0; oppScore = 0;
+            myStreak = 0; oppStreak = 0;
+            updateScoreUI();
+            
+            currentQuestionIndex = 0;
+            showScreen('screen-game');
+
+            // P1 starts immediately since they have questions
+            if (isP1) {
+                questionStarted = true;
+                startQuestion();
+            }
+
+            // Listen for room updates
+            roomListener = roomsDB.get(roomId).on((data) => {
+                if (!data) return;
+                
+                // P2 waits for questions to arrive
+                if (!questionStarted && data.questions && roomQuestions.length === 0) {
+                    try {
+                        roomQuestions = JSON.parse(data.questions);
+                        questionStarted = true;
+                        startQuestion();
+                    } catch(e) {}
+                }
+
+                if (roomQuestions.length > 0) {
+                    // Update opponent score from Gun.js
+                    const myData = data[currentUser.id];
+                    const opp = data[oppData.id];
+                    
+                    if (opp) {
+                        oppScore = opp.score || 0;
+                        oppStreak = opp.streak || 0;
+                    }
+                    updateScoreUI();
+
+                    // Both answered current question?
+                    if (myData && opp && 
+                        myData.ans === currentQuestionIndex && 
+                        opp.ans === currentQuestionIndex) {
+                        
+                        setTimeout(() => {
+                            currentQuestionIndex++;
+                            if (currentQuestionIndex < 5) {
+                                startQuestion();
+                            } else {
+                                endGame(oppData.id);
+                            }
+                        }, 2000);
+                    }
+                }
+            });
+        }
+
+        function updateScoreUI() {
+            document.getElementById('p1-score').innerText = myScore;
+            document.getElementById('p1-streak').innerText = '🔥 ' + myStreak;
+            document.getElementById('p2-score').innerText = oppScore;
+            document.getElementById('p2-streak').innerText = '🔥 ' + oppStreak;
+        }
+
+        function startQuestion() {
+            answeredCurrent = false;
+            const q = roomQuestions[currentQuestionIndex];
+            document.getElementById('q-current').innerText = currentQuestionIndex + 1;
+            document.getElementById('question-text').innerText = q.q;
+            
+            const optsContainer = document.getElementById('options-container');
+            optsContainer.innerHTML = q.options.map((opt, i) => 
+                `<button class="option-btn" onclick="answerQuestion('${escapeHtml(opt)}', this)">${escapeHtml(opt)}</button>`
+            ).join('');
+
+            // Reset timer
+            const timerFill = document.getElementById('game-timer');
+            timerFill.style.transition = 'none';
+            timerFill.style.width = '100%';
+            
+            // small delay to allow reflow
+            setTimeout(() => {
+                timerFill.style.transition = 'width 15s linear';
+                timerFill.style.width = '0%';
+            }, 50);
+
+            if (gameTimer) clearTimeout(gameTimer);
+            gameTimer = setTimeout(() => {
+                if (!answeredCurrent) {
+                    answerQuestion(null, null); // Timeout
+                }
+            }, 15000);
+        }
+
+        function answerQuestion(selectedAnswer, btnElem) {
+            if (answeredCurrent) return;
+            answeredCurrent = true;
+            clearTimeout(gameTimer);
+
+            const q = roomQuestions[currentQuestionIndex];
+            const isCorrect = selectedAnswer === q.a;
+
+            // Highlight buttons
+            const btns = document.querySelectorAll('.option-btn');
+            btns.forEach(b => {
+                b.disabled = true;
+                if (b.innerText === q.a) b.classList.add('correct');
+                else if (b === btnElem) b.classList.add('wrong');
+            });
+
+            if (isCorrect) {
+                myStreak++;
+                myScore += 100 + (myStreak * 10);
+                if (myStreak > (currentUser.bestStreak || 0)) {
+                    currentUser.bestStreak = myStreak;
+                }
+            } else {
+                myStreak = 0;
+            }
+
+            // Sync to room
+            roomsDB.get(currentRoomId).get(currentUser.id).put({
+                score: myScore,
+                streak: myStreak,
+                ans: currentQuestionIndex
+            });
+        }
+
+        function endGame(oppId) {
+            if (roomListener) roomListener.off();
+            roomsDB.get(currentRoomId).put(null); // cleanup
+            
+            const isWin = myScore > oppScore;
+            const isDraw = myScore === oppScore;
+            
+            let eloChange = 0;
+            if (isWin) eloChange = 25;
+            else if (!isDraw) eloChange = -20;
+
+            // Update local user
+            currentUser.elo = Math.max(0, currentUser.elo + eloChange);
+            currentUser.games++;
+            if (isWin) currentUser.wins++;
+            if (!isWin && !isDraw) currentUser.losses++;
+
+            // Save to DB
+            usersDB.get(currentUser.id).put({
+                elo: currentUser.elo,
+                wins: currentUser.wins,
+                losses: currentUser.losses,
+                games: currentUser.games,
+                bestStreak: currentUser.bestStreak
+            });
+
+            // Show Results
+            document.getElementById('res-title').innerText = isWin ? 'انتصار!' : (isDraw ? 'تعادل' : 'هزيمة');
+            document.getElementById('res-title').style.color = isWin ? 'var(--success)' : (isDraw ? 'var(--accent)' : 'var(--danger)');
+            
+            const eloText = eloChange >= 0 ? `+${eloChange}` : eloChange;
+            document.getElementById('res-elo-change').innerText = `${eloText} ELO`;
+            document.getElementById('res-my-score').innerText = myScore;
+            document.getElementById('res-opp-score').innerText = oppScore;
+
+            showScreen('screen-dashboard');
+            setTimeout(() => { showScreen('screen-result'); }, 100);
+        }
+
+        function escapeHtml(unsafe) {
+            return (unsafe || '').toString()
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+    </script>
 </body>
 </html>
