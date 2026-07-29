@@ -183,7 +183,7 @@ body::before{
 .rank-badge-icon { font-size:42px; }
 
 /* GAME ARENA & MATCHMAKING */
-.arena-card { width:100%;max-width:800px;padding:32px; }
+.arena-card { width:100%;max-width:820px;padding:32px; }
 .opts-grid-2x2 { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px; }
 @media(max-width:500px){.opts-grid-2x2{grid-template-columns:1fr;}}
 .opt-btn {
@@ -201,7 +201,7 @@ body::before{
 /* ARENA PLAYER PROFILE CHIP */
 .arena-player-box {
   display:flex;flex-direction:column;gap:4px;padding:12px 18px;border-radius:16px;
-  background:rgba(255,255,255,0.03);border:1px solid var(--border);min-width:200px;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);min-width:220px;
 }
 .arena-player-meta { display:flex;align-items:center;justify-content:space-between;gap:8px; }
 .arena-wins-badge { font-size:11px;color:var(--gold);font-weight:700;background:rgba(245,158,11,0.15);padding:2px 8px;border-radius:10px; }
@@ -424,7 +424,7 @@ body::before{
       <div class="spinner-pulse"></div>
       <h2 style="font-size:24px;font-weight:900;" id="searchTitle">جاري البحث عن لاعب حقيقي متصل...</h2>
       <p style="color:var(--muted);font-size:13px;margin-top:6px;max-width:400px;margin-left:auto;margin-right:auto;" id="searchSub">
-        ننتظر انضمام لاعب حقيقي آخر في القائمة... افتح النافذة الثانية واضغط (ابدأ المعركة) لتدخلا النزال سوياً!
+        ننتظر انضمام لاعب حقيقي آخر في القائمة... اضغط (ابدأ المعركة) في الحساب الآخر لتدخلا سوياً!
       </p>
       <div style="font-size:24px;font-weight:900;color:var(--gold);margin-top:16px;" id="searchTimer">00:00</div>
       <button class="btn btn-secondary" onclick="cancelSearch()" style="margin-top:20px;">إلغاء البحث</button>
@@ -493,30 +493,46 @@ const CATEGORIES = [
 ];
 
 const QUESTIONS_DATA = {
-  science: [{q:"ما هو الرمز الكيميائي للماء؟",opts:["H₂O","CO₂","NaCl","O₂"],c:0}],
-  sports: [{q:"من فاز بكأس العالم 2022 في قطر؟",opts:["الأرجنتين","فرنسا","البرازيل","المغرب"],c:0}],
-  history: [{q:"متى بدأت الحرب العالمية الأولى؟",opts:["1914","1912","1916","1918"],c:0}],
-  general: [{q:"كم عدد ألوان قوس قزح؟",opts:["7","6","8","5"],c:0}],
-  anime: [{q:"ما اسم دفتر الموت في أنمي Death Note؟",opts:["Death Note","Death Book","Grimoire","Shinigami Note"],c:0}],
-  onepiece: [{q:"ما هو اسم حلم لوفي الرئيسي؟",opts:["ملك القراصنة","أقوى سياف","حاكم البحار","مكتشف العالم"],c:0}],
-  hxh: [{q:"من هو صديق غون المفضل وعضو عائلة زولديك؟",opts:["كيلوا","كورابيكا","يوريو","هيسوكا"],c:0}]
+  science: [
+    {q:"ما هو الرمز الكيميائي للماء؟",opts:["H₂O","CO₂","NaCl","O₂"],c:0},
+    {q:"كم عدد عظام جسم الإنسان البالغ؟",opts:["206","200","212","198"],c:0}
+  ],
+  sports: [
+    {q:"من فاز بكأس العالم 2022 في قطر؟",opts:["الأرجنتين","فرنسا","البرازيل","المغرب"],c:0}
+  ],
+  history: [
+    {q:"متى بدأت الحرب العالمية الأولى؟",opts:["1914","1912","1916","1918"],c:0}
+  ],
+  general: [
+    {q:"كم عدد ألوان قوس قزح؟",opts:["7","6","8","5"],c:0}
+  ],
+  anime: [
+    {q:"ما اسم دفتر الموت في أنمي Death Note؟",opts:["Death Note","Death Book","Grimoire","Shinigami Note"],c:0}
+  ],
+  onepiece: [
+    {q:"ما هو اسم حلم لوفي الرئيسي؟",opts:["ملك القراصنة","أقوى سياف","حاكم البحار","مكتشف العالم"],c:0}
+  ],
+  hxh: [
+    {q:"من هو صديق غون المفضل وعضو عائلة زولديك؟",opts:["كيلوا","كورابيكا","يوريو","هيسوكا"],c:0}
+  ]
 };
 
 let currentUser = { username: 'لاعب_' + Math.floor(100+Math.random()*900), elo: 1037, wins: 2, losses: 1 };
 let selectedCat = 'science';
 
-// REALTIME ENGINE (NO BOTS, STRICT 2-PLAYER PAIRING)
-let channel = null;
+// REALTIME ENGINE WITH SHARED QUEUE SYNCHRONIZATION
 let searchTimerInterval = null;
+let queuePollInterval = null;
+let roomPollInterval = null;
 let searchSeconds = 0;
 let isSearching = false;
-let currentMatchData = null;
+let activeMatchRoomId = null;
+let activeMatchData = null;
 
 window.addEventListener('load', () => {
   renderCategories();
   renderRanksPage();
   renderRankTiersRows();
-  initRealtime();
 
   const sess = localStorage.getItem('lor_user_session');
   if (sess) {
@@ -527,24 +543,7 @@ window.addEventListener('load', () => {
   showScreen('dashboard');
 });
 
-function initRealtime() {
-  if ('BroadcastChannel' in window) {
-    channel = new BroadcastChannel('lor_1v1_realtime');
-    channel.onmessage = (e) => handleRealTimeMsg(e.data);
-  }
-  // Sync fallback
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'lor_sync_event') {
-      try { handleRealTimeMsg(JSON.parse(e.newValue)); } catch(err){}
-    }
-  });
-}
-
-function sendRealtimeMsg(data) {
-  if (channel) channel.postMessage(data);
-  localStorage.setItem('lor_sync_event', JSON.stringify({ ...data, _ts: Date.now() }));
-}
-
+// SHARED QUEUE PAIRING SYSTEM IN LOCALSTORAGE
 function startSearchingMatch() {
   isSearching = true;
   searchSeconds = 0;
@@ -560,70 +559,113 @@ function startSearchingMatch() {
     document.getElementById('searchTimer').textContent = `${m}:${s}`;
   }, 1000);
 
-  // Announce search to all open tabs/windows
-  sendRealtimeMsg({
-    type: 'JOIN_QUEUE',
-    user: currentUser.username,
+  // Add user to global queue
+  let queue = JSON.parse(localStorage.getItem('lor_shared_queue') || '[]');
+  // Remove stale entries
+  queue = queue.filter(q => q.username !== currentUser.username && (Date.now() - q.time) < 30000);
+  queue.push({
+    username: currentUser.username,
     elo: currentUser.elo,
-    wins: currentUser.wins
+    wins: currentUser.wins,
+    time: Date.now(),
+    cat: selectedCat
   });
+  localStorage.setItem('lor_shared_queue', JSON.stringify(queue));
+
+  // Poll queue every 400ms to check for pairing
+  clearInterval(queuePollInterval);
+  queuePollInterval = setInterval(pollSharedQueue, 400);
+}
+
+function pollSharedQueue() {
+  if (!isSearching) return;
+
+  let queue = JSON.parse(localStorage.getItem('lor_shared_queue') || '[]');
+  // Filter active valid entries
+  queue = queue.filter(q => (Date.now() - q.time) < 35000);
+  localStorage.setItem('lor_shared_queue', JSON.stringify(queue));
+
+  // Find another player in queue
+  const otherPlayer = queue.find(q => q.username !== currentUser.username);
+  if (otherPlayer) {
+    // PAIR FOUND! Create Match Room!
+    const matchId = 'room_' + Math.min(currentUser.username.localeCompare(otherPlayer.username), 1) + '_' + Date.now();
+    
+    // Remove both from queue
+    queue = queue.filter(q => q.username !== currentUser.username && q.username !== otherPlayer.username);
+    localStorage.setItem('lor_shared_queue', JSON.stringify(queue));
+
+    // Create room state
+    const roomState = {
+      matchId: matchId,
+      p1: currentUser.username,
+      p1Wins: currentUser.wins,
+      p1Elo: currentUser.elo,
+      p1Hp: 1000,
+      p2: otherPlayer.username,
+      p2Wins: otherPlayer.wins || 3,
+      p2Elo: otherPlayer.elo || 1037,
+      p2Hp: 1000,
+      cat: selectedCat,
+      qIdx: 0,
+      answers: {}
+    };
+    localStorage.setItem('lor_active_room_' + matchId, JSON.stringify(roomState));
+    localStorage.setItem('lor_player_room_' + currentUser.username, matchId);
+    localStorage.setItem('lor_player_room_' + otherPlayer.username, matchId);
+
+    enterMatchArena(roomState);
+  } else {
+    // Check if another player already created a room for us
+    const existingRoomId = localStorage.getItem('lor_player_room_' + currentUser.username);
+    if (existingRoomId) {
+      const roomData = JSON.parse(localStorage.getItem('lor_active_room_' + existingRoomId) || 'null');
+      if (roomData) {
+        enterMatchArena(roomData);
+      }
+    }
+  }
 }
 
 function cancelSearch() {
   isSearching = false;
   clearInterval(searchTimerInterval);
-  sendRealtimeMsg({ type: 'LEAVE_QUEUE', user: currentUser.username });
+  clearInterval(queuePollInterval);
+
+  let queue = JSON.parse(localStorage.getItem('lor_shared_queue') || '[]');
+  queue = queue.filter(q => q.username !== currentUser.username);
+  localStorage.setItem('lor_shared_queue', JSON.stringify(queue));
+  localStorage.removeItem('lor_player_room_' + currentUser.username);
+
   showScreen('dashboard');
 }
 
-function handleRealTimeMsg(msg) {
-  if (!msg) return;
-
-  // Real player in queue searching
-  if (msg.type === 'JOIN_QUEUE' && msg.user !== currentUser.username) {
-    if (isSearching) {
-      // Both are searching! Create pair!
-      const matchId = 'match_' + Date.now();
-      sendRealtimeMsg({
-        type: 'MATCH_FOUND',
-        matchId: matchId,
-        p1: currentUser.username,
-        p1Elo: currentUser.elo,
-        p1Wins: currentUser.wins,
-        p2: msg.user,
-        p2Elo: msg.elo,
-        p2Wins: msg.wins || 3,
-        cat: selectedCat
-      });
-      launchReal1v1Arena(matchId, currentUser.username, currentUser.wins, msg.user, msg.wins || 3, msg.elo);
-    }
-  }
-
-  // Match paired notification
-  if (msg.type === 'MATCH_FOUND' && (msg.p1 === currentUser.username || msg.p2 === currentUser.username)) {
-    const oppName = msg.p1 === currentUser.username ? msg.p2 : msg.p1;
-    const oppElo = msg.p1 === currentUser.username ? msg.p2Elo : msg.p1Elo;
-    const oppWins = msg.p1 === currentUser.username ? msg.p2Wins : msg.p1Wins;
-    launchReal1v1Arena(msg.matchId, currentUser.username, currentUser.wins, oppName, oppWins, oppElo);
-  }
-}
-
-function launchReal1v1Arena(matchId, you, youWins, opp, oppWins, oppElo) {
+function enterMatchArena(roomState) {
   isSearching = false;
   clearInterval(searchTimerInterval);
+  clearInterval(queuePollInterval);
 
-  currentMatchData = { matchId, you, opp, oppElo, youHp: 1000, oppHp: 1000 };
+  activeMatchRoomId = roomState.matchId;
+  activeMatchData = roomState;
+
   document.getElementById('gameMatchmakingState').style.display = 'none';
   document.getElementById('gamePlayState').style.display = 'block';
 
-  document.getElementById('arenaYouName').textContent = you;
+  const isP1 = roomState.p1 === currentUser.username;
+  const youName = isP1 ? roomState.p1 : roomState.p2;
+  const youWins = isP1 ? roomState.p1Wins : roomState.p2Wins;
+
+  const oppName = isP1 ? roomState.p2 : roomState.p1;
+  const oppWins = isP1 ? roomState.p2Wins : roomState.p1Wins;
+
+  document.getElementById('arenaYouName').textContent = youName;
   document.getElementById('arenaYouWins').textContent = '🏆 ' + (youWins || 2) + ' انتصار';
 
-  document.getElementById('arenaOppName').textContent = opp;
-  document.getElementById('arenaOppWins').textContent = '🏆 ' + (oppWins || 5) + ' انتصار';
+  document.getElementById('arenaOppName').textContent = oppName;
+  document.getElementById('arenaOppWins').textContent = '🏆 ' + (oppWins || 3) + ' انتصار';
 
   const pool = QUESTIONS_DATA[selectedCat] || QUESTIONS_DATA['science'];
-  const q = pool[Math.floor(Math.random() * pool.length)];
+  const q = pool[roomState.qIdx % pool.length];
 
   document.getElementById('arenaCat').textContent = selectedCat.toUpperCase();
   document.getElementById('arenaQText').textContent = q.q;
@@ -637,9 +679,10 @@ function launchReal1v1Arena(matchId, you, youWins, opp, oppWins, oppElo) {
     b.onclick = () => {
       if (i === q.c) b.classList.add('correct'); else b.classList.add('wrong');
       setTimeout(() => {
-        toast('🎉 انتهاء النزال الحقيقي!');
+        toast('🎉 انتهاء النزال المباشر بين ' + youName + ' و ' + oppName + '!');
+        localStorage.removeItem('lor_player_room_' + currentUser.username);
         showScreen('dashboard');
-      }, 1500);
+      }, 1800);
     };
     optsDiv.appendChild(b);
   });
@@ -725,7 +768,7 @@ function renderRanksPage() {
 function renderLeaderboard() {
   const db = JSON.parse(localStorage.getItem('lor_users') || '{}');
   let users = Object.values(db);
-  if (users.length === 0) users = [{ username: 'العفيري أحمد', elo: 4200 }, { username: 'سارة المتحدية', elo: 3800 }, { username: 'خالد الخبير', elo: 3200 }];
+  if (users.length === 0) users = [{ username: 'Lor1', elo: 1037 }, { username: 'Lor12', elo: 1037 }, { username: 'Lor3', elo: 1037 }];
   users.sort((a,b) => b.elo - a.elo);
 
   const container = document.getElementById('lbList');
