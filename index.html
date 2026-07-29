@@ -942,7 +942,7 @@ function getRank(elo) {
 
 function getCatName(q) {
   for(const [id,arr] of Object.entries(QUESTIONS)) {
-    if(arr.includes(q)) return CATS.find(c=>c.id===id)?.name||'';
+    if(arr.some(item => item.q === q.q)) return CATS.find(c=>c.id===id)?.name||'';
   }
   return G.cat==='mixed'?'مختلط':CATS.find(c=>c.id===G.cat)?.name||'';
 }
