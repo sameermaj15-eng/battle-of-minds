@@ -660,7 +660,12 @@ function startGame() {
     pool = [...(QUESTIONS[G.cat]||[])];
   }
   pool = shuffle(pool);
-  G.matchQ = pool.slice(0, Q_COUNT);
+  G.matchQ = pool.slice(0, Q_COUNT).map(q => {
+    const correctVal = q.opts[q.c];
+    const shuffledOpts = shuffle([...q.opts]);
+    const newC = shuffledOpts.indexOf(correctVal);
+    return { ...q, opts: shuffledOpts, c: newC };
+  });
 
   // Reset state
   G.qIdx=0; G.youHp=1000; G.oppHp=1000;
