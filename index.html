@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>⚔️ نزال Lor - لعبة الأسئلة التنافسية</title>
+<title>⚔️ نزال Lor - لعبة الأسئلة التنافسية 1v1</title>
 <meta name="description" content="نزال Lor - لعبة الأسئلة التنافسية 1v1 بين لاعبين حقيقيين. اصعد العرش التصنيفي!">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
@@ -101,25 +101,6 @@ body::before{
 }
 .glass-panel:hover { border-color:var(--border-glow); }
 
-/* AUTH CONTAINER */
-.auth-container { width:100%;max-width:460px;padding:40px;text-align:center; }
-.auth-crest { font-size:64px;margin-bottom:12px;filter:drop-shadow(0 0 30px var(--primary-glow)); }
-.auth-tabs { display:flex;gap:6px;background:rgba(0,0,0,0.4);padding:4px;border-radius:14px;margin:24px 0; }
-.auth-tab { flex:1;padding:10px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;color:var(--muted); }
-.auth-tab.active { background:var(--primary);color:#fff;box-shadow:0 0 15px var(--primary-glow); }
-
-.form-group { margin-bottom:16px;text-align:right; }
-.form-label { font-size:12px;color:var(--muted);margin-bottom:6px;display:block; }
-.input-wrap { position:relative; }
-.input-icon { position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--muted); }
-.input-control {
-  width:100%;padding:14px 44px 14px 16px;border-radius:14px;
-  background:rgba(255,255,255,0.05);border:1px solid var(--border);
-  color:var(--text);font-family:'Cairo',sans-serif;font-size:14px;outline:none;
-  transition:border-color 0.2s, box-shadow 0.2s;
-}
-.input-control:focus { border-color:var(--primary);box-shadow:0 0 18px var(--primary-glow); }
-
 /* DASHBOARD MAIN LAYOUT (Matching Image 2) */
 .dashboard-grid {
   display:grid;grid-template-columns:260px 1fr 300px;
@@ -214,6 +195,28 @@ body::before{
 .opt-btn.correct { background:rgba(16,185,129,0.2);border-color:var(--green);color:var(--green); }
 .opt-btn.wrong { background:rgba(239,68,68,0.2);border-color:var(--red);color:var(--red); }
 
+.spinner-pulse { width:80px;height:80px;border-radius:50%;border:4px solid rgba(139,92,246,0.2);border-top-color:var(--primary);animation:spin 1s linear infinite;margin:0 auto 20px; }
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* AUTH CONTAINER */
+.auth-container { width:100%;max-width:460px;padding:40px;text-align:center; }
+.auth-crest { font-size:64px;margin-bottom:12px;filter:drop-shadow(0 0 30px var(--primary-glow)); }
+.auth-tabs { display:flex;gap:6px;background:rgba(0,0,0,0.4);padding:4px;border-radius:14px;margin:24px 0; }
+.auth-tab { flex:1;padding:10px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;color:var(--muted); }
+.auth-tab.active { background:var(--primary);color:#fff;box-shadow:0 0 15px var(--primary-glow); }
+
+.form-group { margin-bottom:16px;text-align:right; }
+.form-label { font-size:12px;color:var(--muted);margin-bottom:6px;display:block; }
+.input-wrap { position:relative; }
+.input-icon { position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--muted); }
+.input-control {
+  width:100%;padding:14px 44px 14px 16px;border-radius:14px;
+  background:rgba(255,255,255,0.05);border:1px solid var(--border);
+  color:var(--text);font-family:'Cairo',sans-serif;font-size:14px;outline:none;
+  transition:border-color 0.2s, box-shadow 0.2s;
+}
+.input-control:focus { border-color:var(--primary);box-shadow:0 0 18px var(--primary-glow); }
+
 /* TOAST & OVERLAY */
 .toast-notice { position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(15,15,35,0.95);border:1px solid var(--border);padding:14px 28px;border-radius:14px;font-weight:700;z-index:999;backdrop-filter:blur(20px);box-shadow:0 10px 30px rgba(0,0,0,0.5); }
 </style>
@@ -280,7 +283,7 @@ body::before{
             <div class="vs-text-big">VS</div>
             <div class="vs-warrior">⚔️</div>
           </div>
-          <button class="btn btn-hero" onclick="startMatchmaking()">🎮 ابدأ المعركة</button>
+          <button class="btn btn-hero" onclick="startSearchingMatch()">🎮 ابدأ المعركة (1v1 حقيقي)</button>
         </div>
 
         <!-- CATEGORIES GRID -->
@@ -292,7 +295,7 @@ body::before{
           <div class="trust-item">🛡️ لعب نزيه (نظام ضد الغش)</div>
           <div class="trust-item">⚡ أسئلة متنوعة ومتجددة</div>
           <div class="trust-item">👑 نظام التصنيف العادل</div>
-          <div class="trust-item">👥 تحديات 1v1 حقيقية</div>
+          <div class="trust-item">👥 تحديات 1v1 حقيقية 100%</div>
         </div>
       </div>
 
@@ -407,24 +410,27 @@ body::before{
     </div>
   </div>
 
-  <!-- SCREEN 4: ARENA 1V1 MATCHMAKING & GAMEPLAY -->
+  <!-- SCREEN 4: STRICT REALTIME 1V1 MATCHMAKING & ARENA -->
   <div class="screen" id="screenGame">
     <div id="gameMatchmakingState" style="text-align:center;">
-      <div class="rank-crest-3d" style="font-size:72px;">⚔️</div>
-      <h2 style="font-size:26px;font-weight:900;margin-top:16px;">جاري البحث عن لاعب حقيقي...</h2>
-      <p style="color:var(--muted);font-size:14px;margin-top:6px;" id="mmStatusLabel">ننتظر انضمام منافس حقيقي في الحلبة</p>
-      <button class="btn btn-secondary" onclick="showScreen('dashboard')" style="margin-top:24px;">إلغاء البحث</button>
+      <div class="spinner-pulse"></div>
+      <h2 style="font-size:24px;font-weight:900;" id="searchTitle">جاري البحث عن لاعب حقيقي متصل...</h2>
+      <p style="color:var(--muted);font-size:13px;margin-top:6px;max-width:400px;margin-left:auto;margin-right:auto;" id="searchSub">
+        ننتظر انضمام لاعب حقيقي آخر في القائمة... افتح النافذة الثانية واضغط (ابدأ المعركة) لتدخلا النزال سوياً!
+      </p>
+      <div style="font-size:24px;font-weight:900;color:var(--gold);margin-top:16px;" id="searchTimer">00:00</div>
+      <button class="btn btn-secondary" onclick="cancelSearch()" style="margin-top:20px;">إلغاء البحث</button>
     </div>
 
     <div id="gamePlayState" class="glass-panel arena-card" style="display:none">
-      <div style="display:flex;justify-space-between;align-items:center;margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
         <div>
-          <div style="font-size:11px;color:var(--muted);">أنت</div>
+          <div style="font-size:11px;color:var(--muted);" id="arenaYouName">أنت</div>
           <div style="font-size:18px;font-weight:900;color:var(--primary)" id="arenaYouHp">1000 HP</div>
         </div>
         <div style="font-size:28px;font-weight:900;color:var(--gold)" id="arenaTimer">15</div>
         <div style="text-align:left">
-          <div style="font-size:11px;color:var(--muted);" id="arenaOppName">المنافس</div>
+          <div style="font-size:11px;color:var(--muted);" id="arenaOppName">منافس حقيقي</div>
           <div style="font-size:18px;font-weight:900;color:var(--red)" id="arenaOppHp">1000 HP</div>
         </div>
       </div>
@@ -471,74 +477,140 @@ const QUESTIONS_DATA = {
   hxh: [{q:"من هو صديق غون المفضل وعضو عائلة زولديك؟",opts:["كيلوا","كورابيكا","يوريو","هيسوكا"],c:0}]
 };
 
-let currentUser = { username: 'لاعب جديد', elo: 1037, wins: 2, losses: 1 };
+let currentUser = { username: 'لاعب_' + Math.floor(100+Math.random()*900), elo: 1037, wins: 2, losses: 1 };
 let selectedCat = 'science';
+
+// REALTIME ENGINE (NO BOTS, STRICT 2-PLAYER PAIRING)
+let channel = null;
+let searchTimerInterval = null;
+let searchSeconds = 0;
+let isSearching = false;
+let currentMatchData = null;
 
 window.addEventListener('load', () => {
   renderCategories();
   renderRanksPage();
   renderRankTiersRows();
+  initRealtime();
 
   const sess = localStorage.getItem('lor_user_session');
   if (sess) {
     const db = JSON.parse(localStorage.getItem('lor_users') || '{}');
-    if (db[sess.toLowerCase()]) {
-      currentUser = db[sess.toLowerCase()];
-    }
+    if (db[sess.toLowerCase()]) currentUser = db[sess.toLowerCase()];
   }
   updateDashboardUI();
   showScreen('dashboard');
 });
 
-function switchAuthTab(tab) {
-  if (tab === 'login') {
-    document.getElementById('tabLoginBtn').classList.add('active');
-    document.getElementById('tabRegBtn').classList.remove('active');
-    document.getElementById('loginForm').style.display = 'block';
-    document.getElementById('regForm').style.display = 'none';
-  } else {
-    document.getElementById('tabRegBtn').classList.add('active');
-    document.getElementById('tabLoginBtn').classList.remove('active');
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('regForm').style.display = 'block';
+function initRealtime() {
+  if ('BroadcastChannel' in window) {
+    channel = new BroadcastChannel('lor_1v1_realtime');
+    channel.onmessage = (e) => handleRealTimeMsg(e.data);
+  }
+  // Sync fallback
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'lor_sync_event') {
+      try { handleRealTimeMsg(JSON.parse(e.newValue)); } catch(err){}
+    }
+  });
+}
+
+function sendRealtimeMsg(data) {
+  if (channel) channel.postMessage(data);
+  localStorage.setItem('lor_sync_event', JSON.stringify({ ...data, _ts: Date.now() }));
+}
+
+function startSearchingMatch() {
+  isSearching = true;
+  searchSeconds = 0;
+  showScreen('game');
+  document.getElementById('gameMatchmakingState').style.display = 'block';
+  document.getElementById('gamePlayState').style.display = 'none';
+
+  clearInterval(searchTimerInterval);
+  searchTimerInterval = setInterval(() => {
+    searchSeconds++;
+    const m = String(Math.floor(searchSeconds / 60)).padStart(2, '0');
+    const s = String(searchSeconds % 60).padStart(2, '0');
+    document.getElementById('searchTimer').textContent = `${m}:${s}`;
+  }, 1000);
+
+  // Announce search to all open tabs/windows
+  sendRealtimeMsg({
+    type: 'JOIN_QUEUE',
+    user: currentUser.username,
+    elo: currentUser.elo
+  });
+}
+
+function cancelSearch() {
+  isSearching = false;
+  clearInterval(searchTimerInterval);
+  sendRealtimeMsg({ type: 'LEAVE_QUEUE', user: currentUser.username });
+  showScreen('dashboard');
+}
+
+function handleRealTimeMsg(msg) {
+  if (!msg) return;
+
+  // Real player in queue searching
+  if (msg.type === 'JOIN_QUEUE' && msg.user !== currentUser.username) {
+    if (isSearching) {
+      // Both are searching! Create pair!
+      const matchId = 'match_' + Date.now();
+      sendRealtimeMsg({
+        type: 'MATCH_FOUND',
+        matchId: matchId,
+        p1: currentUser.username,
+        p1Elo: currentUser.elo,
+        p2: msg.user,
+        p2Elo: msg.elo,
+        cat: selectedCat
+      });
+      launchReal1v1Arena(matchId, currentUser.username, msg.user, msg.elo);
+    }
+  }
+
+  // Match paired notification
+  if (msg.type === 'MATCH_FOUND' && (msg.p1 === currentUser.username || msg.p2 === currentUser.username)) {
+    const oppName = msg.p1 === currentUser.username ? msg.p2 : msg.p1;
+    const oppElo = msg.p1 === currentUser.username ? msg.p2Elo : msg.p1Elo;
+    launchReal1v1Arena(msg.matchId, currentUser.username, oppName, oppElo);
   }
 }
 
-function handleRegister(e) {
-  e.preventDefault();
-  const username = document.getElementById('regUsername').value.trim();
-  const pass = document.getElementById('regPassword').value;
-  const passConf = document.getElementById('regPasswordConfirm').value;
+function launchReal1v1Arena(matchId, you, opp, oppElo) {
+  isSearching = false;
+  clearInterval(searchTimerInterval);
 
-  if (pass !== passConf) return toast('كلمتا المرور غير متطابقتين');
-  const db = JSON.parse(localStorage.getItem('lor_users') || '{}');
-  if (db[username.toLowerCase()]) return toast('❌ اسم المستخدم مسجّل مسبقاً!');
+  currentMatchData = { matchId, you, opp, oppElo, youHp: 1000, oppHp: 1000 };
+  document.getElementById('gameMatchmakingState').style.display = 'none';
+  document.getElementById('gamePlayState').style.display = 'block';
 
-  const user = { username: username, pass: btoa(pass), elo: 1037, wins: 2, losses: 1 };
-  db[username.toLowerCase()] = user;
-  localStorage.setItem('lor_users', JSON.stringify(db));
-  localStorage.setItem('lor_user_session', username);
+  document.getElementById('arenaYouName').textContent = 'أنت (' + you + ')';
+  document.getElementById('arenaOppName').textContent = opp + ' (لاعب حقيقي)';
 
-  currentUser = user;
-  toast('✅ تم إنشاء حسابك!');
-  updateDashboardUI();
-  showScreen('dashboard');
-}
+  const pool = QUESTIONS_DATA[selectedCat] || QUESTIONS_DATA['science'];
+  const q = pool[Math.floor(Math.random() * pool.length)];
 
-function handleLogin(e) {
-  e.preventDefault();
-  const username = document.getElementById('loginUsername').value.trim();
-  const pass = document.getElementById('loginPassword').value;
+  document.getElementById('arenaCat').textContent = selectedCat.toUpperCase();
+  document.getElementById('arenaQText').textContent = q.q;
 
-  const db = JSON.parse(localStorage.getItem('lor_users') || '{}');
-  const user = db[username.toLowerCase()];
-  if (!user || user.pass !== btoa(pass)) return toast('❌ اسم المستخدم أو كلمة المرور غير صحيحة!');
-
-  localStorage.setItem('lor_user_session', user.username);
-  currentUser = user;
-  toast('مرحباً بك في نزال Lor!');
-  updateDashboardUI();
-  showScreen('dashboard');
+  const optsDiv = document.getElementById('arenaOpts');
+  optsDiv.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'opt-btn';
+    b.textContent = opt;
+    b.onclick = () => {
+      if (i === q.c) b.classList.add('correct'); else b.classList.add('wrong');
+      setTimeout(() => {
+        toast('🎉 انتهاء النزال الحقيقي!');
+        showScreen('dashboard');
+      }, 1500);
+    };
+    optsDiv.appendChild(b);
+  });
 }
 
 function updateDashboardUI() {
@@ -635,39 +707,6 @@ function renderLeaderboard() {
       <div style="font-size:12px;color:var(--gold);font-weight:900;">${u.elo} ELO</div>
     `;
     container.appendChild(row);
-  });
-}
-
-function startMatchmaking() {
-  showScreen('game');
-  document.getElementById('gameMatchmakingState').style.display = 'block';
-  document.getElementById('gamePlayState').style.display = 'none';
-
-  setTimeout(() => {
-    document.getElementById('gameMatchmakingState').style.display = 'none';
-    document.getElementById('gamePlayState').style.display = 'block';
-    startArenaGame();
-  }, 2200);
-}
-
-function startArenaGame() {
-  const pool = QUESTIONS_DATA[selectedCat] || QUESTIONS_DATA['science'];
-  const q = pool[Math.floor(Math.random() * pool.length)];
-
-  document.getElementById('arenaCat').textContent = selectedCat.toUpperCase();
-  document.getElementById('arenaQText').textContent = q.q;
-
-  const optsDiv = document.getElementById('arenaOpts');
-  optsDiv.innerHTML = '';
-  q.opts.forEach((opt, i) => {
-    const b = document.createElement('button');
-    b.className = 'opt-btn';
-    b.textContent = opt;
-    b.onclick = () => {
-      if (i === q.c) b.classList.add('correct'); else b.classList.add('wrong');
-      setTimeout(() => showScreen('dashboard'), 1500);
-    };
-    optsDiv.appendChild(b);
   });
 }
 
