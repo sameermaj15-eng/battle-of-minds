@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧠 حرب العقول - Battle of Minds</title>
+<meta name="description" content="لعبة أسئلة تنافسية 1v1 في الوقت الحقيقي - ارسم وصوّت واصعد في الرانكد">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06060f;--bg2:#0d0d1e;
+  --card:rgba(255,255,255,0.04);--card2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --p:#7c3aed;--p2:#6d28d9;--pg:rgba(124,58,237,0.35);
+  --s:#0891b2;--sg:rgba(8,145,178,0.3);
+  --gold:#f59e0b;--goldg:rgba(245,158,11,0.3);
+  --text:#e2e8f0;--muted:#64748b;
+  --ok:#10b981;--bad:#ef4444;
+  --hp-you:linear-gradient(90deg,#7c3aed,#06b6d4);
+  --hp-opp:linear-gradient(90deg,#ef4444,#f97316);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse at 10% 10%,rgba(124,58,237,.2) 0%,transparent 55%),
+    radial-gradient(ellipse at 90% 90%,rgba(8,145,178,.12) 0%,transparent 55%),
+    radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.05) 0%,transparent 50%);
+}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:1;padding:20px;overflow-y:auto;gap:18px;}
+.screen.on{display:flex;animation:fadeIn .35s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.glass{background:var(--card);border:1px solid var(--border);backdrop-filter:blur(20px);border-radius:20px;}
+.glass2{background:var(--card2);border:1px solid var(--border2);backdrop-filter:blur(20px);border-radius:20px;}
+
+/* ---- BUTTONS ---- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 30px;border-radius:14px;border:none;cursor:pointer;font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;transition:all .22s;position:relative;overflow:hidden;}
+.btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.08);opacity:0;transition:opacity .18s;}
+.btn:hover::after{opacity:1;}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;box-shadow:0 0 28px var(--pg);}
+.btn-primary:hover{box-shadow:0 0 45px var(--pg);transform:translateY(-2px);}
+.btn-secondary{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);}
+.btn-lg{padding:17px 46px;font-size:19px;border-radius:18px;}
+.btn-sm{padding:7px 16px;font-size:12px;border-radius:10px;}
+
+/* ---- RANK ---- */
+.rank{display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;}
+.r-bronze{background:rgba(205,127,50,.2);color:#cd7f32;border:1px solid rgba(205,127,50,.4);}
+.r-silver{background:rgba(192,192,192,.15);color:#c0c0c0;border:1px solid rgba(192,192,192,.4);}
+.r-gold{background:rgba(255,215,0,.15);color:#ffd700;border:1px solid rgba(255,215,0,.4);}
+.r-platinum{background:rgba(0,212,255,.15);color:#00d4ff;border:1px solid rgba(0,212,255,.4);}
+.r-diamond{background:rgba(185,242,255,.15);color:#b9f2ff;border:1px solid rgba(185,242,255,.4);}
+.r-master{background:rgba(232,121,249,.2);color:#e879f9;border:1px solid rgba(232,121,249,.4);}
+.r-grandmaster{background:rgba(251,146,60,.2);color:#fb923c;border:1px solid rgba(251,146,60,.4);}
+.r-challenger{background:rgba(255,107,53,.25);color:#ff6b35;border:1px solid rgba(255,107,53,.5);animation:challengerGlow 2s ease infinite;}
+@keyframes challengerGlow{0%,100%{box-shadow:0 0 8px rgba(255,107,53,.4);}50%{box-shadow:0 0 20px rgba(255,107,53,.8);}}
+
+/* ---- HOME ---- */
+.logo-big{font-size:clamp(38px,7vw,68px);font-weight:900;background:linear-gradient(135deg,#7c3aed,#06b6d4,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-2px;line-height:1;filter:drop-shadow(0 0 40px rgba(124,58,237,.5));}
+.logo-sub{color:var(--muted);font-size:14px;margin-top:5px;letter-spacing:2px;}
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;width:100%;max-width:680px;}
+@media(max-width:580px){.home-grid{grid-template-columns:1fr;}}
+.player-card{padding:22px;text-align:center;}
+.avatar{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px;background:linear-gradient(135deg,var(--p),var(--s));box-shadow:0 0 28px var(--pg);}
+.pname{font-size:19px;font-weight:700;margin-bottom:6px;}
+.pelo{font-size:26px;font-weight:900;color:var(--gold);}
+.pelo span{font-size:13px;color:var(--muted);font-weight:400;}
+.pstats{display:flex;gap:18px;justify-content:center;margin-top:10px;}
+.stat-v{font-size:20px;font-weight:700;}
+.stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.elo-prog{width:100%;margin-top:10px;}
+.elo-prog-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px;}
+.elo-prog-bg{height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;}
+.elo-prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--p),var(--s));transition:width 1s ease;}
+.lb-card{padding:22px;}
+.lb-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;}
+.lb-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:11px;margin-bottom:6px;background:rgba(255,255,255,.03);transition:background .2s;}
+.lb-row:hover{background:rgba(255,255,255,.06);}
+.lb-pos{font-size:16px;font-weight:900;width:26px;text-align:center;}
+.lb-name{flex:1;font-size:13px;font-weight:600;}
+.lb-elo{font-size:13px;font-weight:700;color:var(--gold);}
+.ninput{width:100%;padding:13px 18px;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);font-family:'Cairo',sans-serif;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s;text-align:center;}
+.ninput:focus{border-color:var(--p);box-shadow:0 0 18px var(--pg);}
+.ninput::placeholder{color:var(--muted);}
+
+/* ---- CATEGORY ---- */
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:640px;}
+@media(max-width:500px){.cat-grid{grid-template-columns:1fr 1fr;}}
+.cat-btn{padding:22px 14px;border-radius:18px;border:2px solid var(--border);background:var(--card);cursor:pointer;text-align:center;transition:all .22s;display:flex;flex-direction:column;align-items:center;gap:10px;}
+.cat-btn:hover{background:var(--card2);border-color:var(--p);transform:translateY(-3px);box-shadow:0 8px 30px var(--pg);}
+.cat-btn.selected{background:rgba(124,58,237,.15);border-color:var(--p);box-shadow:0 0 25px var(--pg);}
+.cat-icon{font-size:38px;}
+.cat-name{font-size:14px;font-weight:700;}
+.cat-count{font-size:11px;color:var(--muted);}
+
+/* ---- MATCHMAKING ---- */
+.mm-box{padding:48px 56px;text-align:center;max-width:460px;}
+.spinner{width:80px;height:80px;border-radius:50%;border:3px solid rgba(124,58,237,.15);border-top-color:var(--p);animation:spin 1s linear infinite;margin:0 auto 24px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dots{display:flex;gap:7px;justify-content:center;margin-top:16px;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--p);opacity:.3;animation:bl 1.4s ease infinite;}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes bl{0%,80%,100%{opacity:.3}40%{opacity:1}}
+.vs-row{display:flex;align-items:center;gap:20px;justify-content:center;margin:26px 0;}
+.vs-pl{text-align:center;}
+.vs-av{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 8px;}
+.vs-av.you{background:linear-gradient(135deg,var(--p),#6d28d9);box-shadow:0 0 22px var(--pg);}
+.vs-av.opp{background:linear-gradient(135deg,var(--bad),#b91c1c);box-shadow:0 0 22px rgba(239,68,68,.4);}
+.vs-t{font-size:32px;font-weight:900;color:var(--gold);text-shadow:0 0 25px var(--goldg);animation:pulse 1s ease infinite;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+
+/* ---- GAME ---- */
+#sg{gap:12px;}
+.game-top{width:100%;max-width:760px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.player-hp-wrap{flex:1;min-width:180px;}
+.hp-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;display:flex;justify-content:space-between;}
+.hp-bar-bg{height:14px;border-radius:7px;background:rgba(255,255,255,.08);overflow:hidden;}
+.hp-bar-fill{height:100%;border-radius:7px;transition:width .5s ease;}
+.hp-fill-you{background:var(--hp-you);}
+.hp-fill-opp{background:var(--hp-opp);}
+.hp-val{font-size:18px;font-weight:900;margin-top:3px;}
+.timer-center{text-align:center;min-width:70px;}
+.timer-circle{position:relative;width:64px;height:64px;margin:0 auto;}
+.tc-svg{transform:rotate(-90deg);}
+.tc-track{fill:none;stroke:rgba(255,255,255,.1);stroke-width:5;}
+.tc-prog{fill:none;stroke:var(--p);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .9s linear,stroke .5s;}
+.tc-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;}
+.streak-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.4);color:var(--gold);margin-top:4px;}
+.q-card{width:100%;max-width:760px;padding:28px 32px;}
+.q-cat{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;}
+.q-text{font-size:clamp(16px,3vw,22px);font-weight:700;line-height:1.5;margin-bottom:22px;}
+.opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:500px){.opts-grid{grid-template-columns:1fr;}}
+.opt{padding:14px 18px;border-radius:14px;border:2px solid var(--border);background:rgba(255,255,255,.04);cursor:pointer;font-family:'Cairo',sans-serif;font-size:14px;font-weight:600;color:var(--text);transition:all .18s;text-align:right;}
+.opt:hover:not(:disabled){background:rgba(124,58,237,.12);border-color:var(--p);transform:translateX(-3px);}
+.opt:disabled{cursor:not-allowed;}
+.opt.correct{background:rgba(16,185,129,.15);border-color:var(--ok);color:var(--ok);}
+.opt.wrong{background:rgba(239,68,68,.12);border-color:var(--bad);color:var(--bad);}
+.opt.reveal{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.4);}
+.q-progress{width:100%;max-width:760px;display:flex;align-items:center;gap:12px;}
+.qp-label{font-size:12px;color:var(--muted);white-space:nowrap;}
+.qp-dots{display:flex;gap:5px;flex:1;}
+.qp-dot{width:18px;height:6px;border-radius:3px;background:rgba(255,255,255,.1);transition:background .3s;}
+.qp-dot.done{background:var(--p);}
+.qp-dot.current{background:var(--gold);}
+.dmg-popup{position:fixed;pointer-events:none;font-size:22px;font-weight:900;z-index:200;animation:dmgFly .9s ease-out forwards;}
+@keyframes dmgFly{from{opacity:1;transform:translateY(0) scale(1);}to{opacity:0;transform:translateY(-80px) scale(1.3);}}
+.streak-fire{font-size:28px;animation:fireShake .3s ease;}
+@keyframes fireShake{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+
+/* ---- RESULT ---- */
+.result-trophy{font-size:72px;animation:trophyPop .6s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes trophyPop{from{opacity:0;transform:scale(.2) rotate(-30deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+.result-title{font-size:38px;font-weight:900;margin:8px 0;}
+.result-title.win{color:var(--gold);text-shadow:0 0 28px var(--goldg);}
+.result-title.loss{color:var(--bad);text-shadow:0 0 28px rgba(239,68,68,.4);}
+.elo-delta{display:inline-flex;align-items:center;gap:6px;padding:6px 20px;border-radius:30px;font-size:22px;font-weight:900;margin:8px 0;}
+.elo-pos{background:rgba(16,185,129,.2);color:var(--ok);border:1px solid rgba(16,185,129,.4);}
+.elo-neg{background:rgba(239,68,68,.2);color:var(--bad);border:1px solid rgba(239,68,68,.4);}
+.result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:520px;}
+.res-stat{padding:16px;text-align:center;border-radius:14px;}
+.res-stat-v{font-size:26px;font-weight:900;}
+.res-stat-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+
+/* PARTICLE */
+.particle{position:fixed;pointer-events:none;z-index:300;border-radius:50%;animation:pFly 1.1s ease-out forwards;}
+@keyframes pFly{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(-220px) scale(0)}}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:rgba(15,15,30,.95);border:1px solid var(--border);padding:12px 26px;border-radius:13px;font-size:14px;font-weight:600;z-index:500;animation:tIn .28s ease;backdrop-filter:blur(20px);}
+@keyframes tIn{from{opacity:0;transform:translateX(-50%) translateY(18px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* DAMAGE OVERLAY */
+.dmg-overlay{position:fixed;inset:0;pointer-events:none;z-index:100;border:4px solid transparent;transition:border-color .2s;}
+.dmg-overlay.hit{border-color:rgba(239,68,68,.6);animation:hitFlash .4s ease;}
+@keyframes hitFlash{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
+</style>
+</head>
+<body>
+<div class="dmg-overlay" id="dmgOverlay"></div>
+
+<!-- HOME -->
+<div class="screen on" id="sh">
+  <div style="text-align:center">
+    <div class="logo-big">🧠 حرب العقول</div>
+    <div class="logo-sub">Battle of Minds · لعبة الأسئلة التنافسية</div>
+  </div>
+  <div class="home-grid">
+    <div class="glass player-card">
+      <div class="avatar">🎯</div>
+      <div id="hRank" class="rank r-silver" style="margin:0 auto 8px">⚔️ فضي</div>
+      <div class="pname" id="hName">لاعب جديد</div>
+      <div class="pelo" id="hElo">1000 <span>ELO</span></div>
+      <div class="elo-prog">
+        <div class="elo-prog-labels"><span id="epFrom">فضي</span><span id="epTo">ذهبي</span></div>
+        <div class="elo-prog-bg"><div class="elo-prog-fill" id="epFill" style="width:0%"></div></div>
+      </div>
+      <div class="pstats">
+        <div><div class="stat-v" id="hW" style="color:var(--ok)">0</div><div class="stat-l">فوز</div></div>
+        <div><div class="stat-v" id="hL" style="color:var(--bad)">0</div><div class="stat-l">هزيمة</div></div>
+        <div><div class="stat-v" id="hWR" style="color:var(--gold)">-</div><div class="stat-l">نسبة الفوز</div></div>
+      </div>
+    </div>
+    <div class="glass lb-card">
+      <div class="lb-title">🏆 المتصدرون</div>
+      <div id="lbList"></div>
+    </div>
+  </div>
+  <div style="width:100%;max-width:680px;display:flex;gap:10px;">
+    <input class="ninput" id="nameInp" type="text" placeholder="أدخل اسمك..." maxlength="18">
+    <button class="btn btn-secondary btn-sm" onclick="saveName()">💾 حفظ</button>
+  </div>
+  <button class="btn btn-primary btn-lg" onclick="goCategory()">🎮 ابدأ المعركة</button>
+</div>
+
+<!-- CATEGORY -->
+<div class="screen" id="sc">
+  <div style="text-align:center">
+    <div style="font-size:26px;font-weight:900;margin-bottom:6px;">🎯 اختر الفئة</div>
+    <div style="color:var(--muted);font-size:13px;">ستواجه منافسك في 10 أسئلة</div>
+  </div>
+  <div class="cat-grid" id="catGrid"></div>
+  <button class="btn btn-secondary" onclick="show('sh')">← رجوع</button>
+</div>
+
+<!-- MATCHMAKING -->
+<div class="screen" id="smm">
+  <div class="glass mm-box">
+    <div id="mmSearch">
+      <div class="spinner"></div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:6px;">البحث عن منافس...</div>
+      <div style="color:var(--muted);font-size:13px;">نبحث عن لاعب بمستواك في كل أرجاء العالم</div>
+      <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    </div>
+    <div id="mmFound" style="display:none">
+      <div style="font-size:18px;font-weight:700;color:var(--ok);margin-bottom:4px;">✅ تم إيجاد منافس!</div>
+      <div style="color:var(--muted);font-size:13px;margin-bottom:6px;">استعد للمعركة...</div>
+      <div class="vs-row">
+        <div class="vs-pl">
+          <div class="vs-av you">🎯</div>
+          <div style="font-size:13px;font-weight:700" id="mmYouName">أنت</div>
+          <div id="mmYouRank" class="rank r-silver" style="margin:5px auto 0">⚔️ فضي</div>
+        </div>
+        <div class="vs-t">VS</div>
+        <div class="vs-pl">
+          <div class="vs-av opp">🔥</div>
+          <div style="font-size:13px;font-weight:700" id="mmOppName">منافس</div>
+          <div id="mmOppRank" class="rank r-gold" style="margin:5px auto 0">✨ ذهبي</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="sg">
+  <!-- Top: HP bars + timer -->
+  <div class="game-top">
+    <div class="player-hp-wrap">
+      <div class="hp-label">
+        <span id="youLabel">🎯 أنت</span>
+        <span id="youHpVal">1000</span>
+      </div>
+      <div class="hp-bar-bg"><div class="hp-bar-fill hp-fill-you" id="youHpBar" style="width:100%"></div></div>
+      <div class="streak-badge" id="youStreakBadge">🔥 Streak: <span id="youStreak">0</span> · <span id="youMult">1x</span></div>
+    </div>
+    <div class="timer-center">
+      <div class="timer-circle">
+        <svg class="tc-svg" width="64" height="64" viewBox="0 0 64 64">
+          <circle class="tc-track" cx="32" cy="32" r="27"/>
+          <circle class="tc-prog" id="timerCircle" cx="32" cy="32" r="27"
+            stroke-dasharray="169.64" stroke-dashoffset="0"/>
+        </svg>
+        <div class="tc-num" id="timerNum">15</div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px;" id="qNumLabel">س 1 / 10</div>
+    </div>
+    <div class="player-hp-wrap" style="text-align:left">
+      <div class="hp-label" style="flex-direction:row-reverse">
+        <span id="oppLabel">🔥 منافس</span>
+        <span id="oppHpVal">1000</span>
+      </div>
+      <div class="hp-bar-bg"><div class="hp-bar-fill hp-fill-opp" id="oppHpBar" style="width:100%"></div></div>
+      <div class="streak-badge" id="oppStreakBadge" style="float:left">🔥 Streak: <span id="oppStreak">0</span> · <span id="oppMult">1x</span></div>
+    </div>
+  </div>
+
+  <!-- Question -->
+  <div class="glass q-card" id="qCard">
+    <div class="q-cat" id="qCat">علوم</div>
+    <div class="q-text" id="qText">جارٍ تحميل السؤال...</div>
+    <div class="opts-grid" id="optsGrid"></div>
+  </div>
+
+  <!-- Progress -->
+  <div class="q-progress">
+    <span class="qp-label" id="qpLabel">التقدم</span>
+    <div class="qp-dots" id="qpDots"></div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="sr">
+  <div style="text-align:center">
+    <div class="result-trophy" id="resTrophy">🏆</div>
+    <div class="result-title" id="resTitle">فزت!</div>
+    <div class="elo-delta" id="resDelta">+25 ELO</div>
+  </div>
+  <div class="result-stats glass" style="padding:18px;width:100%;max-width:520px;">
+    <div class="res-stat glass2">
+      <div class="res-stat-v" id="rsCorrect" style="color:var(--ok)">-</div>
+      <div class="res-stat-l">إجابات صحيحة</div>
+    </div>
+    <div class="res-stat glass2">
+      <div class="res-stat-v" id="rsMaxStreak" style="color:var(--gold)">-</div>
+      <div class="res-stat-l">أعلى Streak</div>
+    </div>
+    <div class="res-stat glass2">
+      <div class="res-stat-v" id="rsDmg" style="color:var(--bad)">-</div>
+      <div class="res-stat-l">ضرر ناجع</div>
+    </div>
+  </div>
+  <div style="width:100%;max-width:520px;">
+    <div class="glass2" style="padding:18px;border-radius:16px;text-align:center;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">تحديث الرانكد</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;">
+        <div id="rankBefore" class="rank r-silver">قبل</div>
+        <div style="font-size:20px;color:var(--muted)">→</div>
+        <div id="rankAfter" class="rank r-silver">بعد</div>
+        <div id="newElo" style="font-size:22px;font-weight:900;color:var(--gold)">1000 ELO</div>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+    <button class="btn btn-primary btn-lg" onclick="goCategory()">🎮 مباراة أخرى</button>
+    <button class="btn btn-secondary" onclick="show('sh')">🏠 الرئيسية</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const QUESTIONS = {
+  science:[
+    {q:"ما هو الرمز الكيميائي للماء؟",opts:["H₂O","CO₂","NaCl","O₂"],c:0},
+    {q:"كم عدد عظام جسم الإنسان البالغ؟",opts:["206","200","212","198"],c:0},
+    {q:"ما هو أكبر كوكب في المجموعة الشمسية؟",opts:["المشتري","زحل","أورانوس","نبتون"],c:0},
+    {q:"ما هي سرعة الضوء تقريبًا؟",opts:["300,000 كم/ث","150,000 كم/ث","450,000 كم/ث","600,000 كم/ث"],c:0},
+    {q:"ما درجة حرارة غليان الماء بالسيليزيوس؟",opts:["100","90","80","120"],c:0},
+    {q:"ما هو أصغر كوكب في المجموعة الشمسية؟",opts:["عطارد","المريخ","أورانوس","الزهرة"],c:0},
+    {q:"ما العنصر الأكثر وفرة في الهواء؟",opts:["النيتروجين","الأكسجين","ثاني أكسيد الكربون","الهيدروجين"],c:0},
+    {q:"كم عدد كروموسومات الإنسان؟",opts:["46","44","48","23"],c:0},
+    {q:"ما هو الرمز الكيميائي للذهب؟",opts:["Au","Ag","Fe","Cu"],c:0},
+    {q:"ما هو أكبر عضو في جسم الإنسان؟",opts:["الجلد","الكبد","الرئة","القلب"],c:0},
+    {q:"ما هي نظرية النسبية منسوبة لـ؟",opts:["أينشتاين","نيوتن","داروين","هوكينغ"],c:0},
+    {q:"كم حاسة أساسية يمتلك الإنسان؟",opts:["5","4","6","7"],c:0},
+    {q:"ما هو الكوكب الأقرب إلى الشمس؟",opts:["عطارد","الزهرة","الأرض","المريخ"],c:0},
+    {q:"كم يبعد القمر عن الأرض تقريبًا؟",opts:["384,000 كم","150,000 كم","500,000 كم","250,000 كم"],c:0},
+    {q:"من وضع قوانين الحركة الثلاثة؟",opts:["نيوتن","أينشتاين","أرشميدس","غاليليو"],c:0},
+    {q:"ما هي درجة تجمد الماء بالسيليزيوس؟",opts:["0","5","-5","10"],c:0},
+    {q:"ما اسم العملية التي تحول بها النباتات ضوء الشمس إلى طاقة؟",opts:["البناء الضوئي","التنفس الخلوي","الأيض","الهضم"],c:0},
+    {q:"ما هو أكثر العناصر وفرة في القشرة الأرضية؟",opts:["الأكسجين","السيليكون","الألومنيوم","الحديد"],c:0},
+    {q:"كم يبلغ عدد أسنان الإنسان البالغ؟",opts:["32","28","30","34"],c:0},
+    {q:"ما هي وحدة قياس القوة؟",opts:["نيوتن","باسكال","جول","واط"],c:0},
+  ],
+  sports:[
+    {q:"من فاز بكأس العالم 2022 في قطر؟",opts:["الأرجنتين","فرنسا","البرازيل","المغرب"],c:0},
+    {q:"كم عدد لاعبي كرة القدم في الفريق الواحد على الملعب؟",opts:["11","10","12","9"],c:0},
+    {q:"في أي مدينة أقيمت الألعاب الأولمبية الأولى الحديثة؟",opts:["أثينا","باريس","لندن","برلين"],c:0},
+    {q:"كم تبلغ مسافة سباق الماراثون؟",opts:["42.195 كم","40 كم","45 كم","38 كم"],c:0},
+    {q:"من هو الرياضي الأكثر حصولًا على ميداليات ذهبية أولمبية؟",opts:["مايكل فيلبس","كارل لويس","أوسين بولت","مارك سبيتز"],c:0},
+    {q:"كم مرة فازت البرازيل بكأس العالم؟",opts:["5","4","6","3"],c:0},
+    {q:"ما طول ملعب كرة القدم القياسي؟",opts:["105 متر","100 متر","110 متر","90 متر"],c:0},
+    {q:"من هو أسرع إنسان على وجه الأرض؟",opts:["أوسين بولت","يوهان بليك","تايسون غاي","أساف باول"],c:0},
+    {q:"كم نقطة تساوي رمية الثلاثة في كرة السلة؟",opts:["3","2","4","1"],c:0},
+    {q:"ما هي الدولة المضيفة لكأس العالم 2030؟",opts:["إسبانيا والمغرب والبرتغال","البرازيل","قطر","ألمانيا"],c:0},
+    {q:"كم دقيقة مدة مباراة كرة القدم؟",opts:["90","80","100","120"],c:0},
+    {q:"في أي رياضة يستخدم مضرب الراكيت؟",opts:["التنس","الغولف","البولينغ","الرماية"],c:0},
+    {q:"من فاز بأكثر بطولات ويمبلدون للرجال؟",opts:["نوفاك ديوكوفيتش","روجر فيدرر","رافائيل نادال","بيت سامبراس"],c:0},
+    {q:"كم لاعبًا يشترك في مباراة كرة السلة لكل فريق؟",opts:["5","6","4","7"],c:0},
+    {q:"ما هي الرياضة التي يلعب فيها ليونيل ميسي؟",opts:["كرة القدم","كرة السلة","التنس","السباحة"],c:0},
+    {q:"في أي عام أُقيمت دورة الألعاب الأولمبية الصيفية في ريو دي جانيرو؟",opts:["2016","2012","2020","2008"],c:0},
+    {q:"كم مسافة سباق 100 متر في ألعاب القوى؟",opts:["100 متر","200 متر","400 متر","50 متر"],c:0},
+    {q:"ما هي أطول بطولة تنس في العالم من حيث المدة؟",opts:["ويمبلدون","أستراليا المفتوحة","رولان غاروس","يو إس أوبن"],c:0},
+    {q:"من هو مدرب منتخب الأرجنتين الفائز بكأس العالم 2022؟",opts:["ليونيل سكالوني","دييغو مارادونا","خوسيه بيكيرمان","مارسيلو بييلسا"],c:0},
+    {q:"كم مرة فازت ألمانيا بكأس العالم لكرة القدم؟",opts:["4","3","5","2"],c:0},
+  ],
+  history:[
+    {q:"متى بدأت الحرب العالمية الأولى؟",opts:["1914","1912","1916","1918"],c:0},
+    {q:"من هو أول رئيس للولايات المتحدة الأمريكية؟",opts:["جورج واشنطن","أبراهام لنكولن","توماس جيفرسون","جون أدامز"],c:0},
+    {q:"في أي عام سقط جدار برلين؟",opts:["1989","1991","1987","1993"],c:0},
+    {q:"من هم من بنوا الأهرامات؟",opts:["المصريون القدماء","الرومان","الإغريق","البابليون"],c:0},
+    {q:"متى كانت الثورة الفرنسية؟",opts:["1789","1800","1776","1815"],c:0},
+    {q:"في أي عام انتهت الحرب العالمية الثانية؟",opts:["1945","1943","1947","1950"],c:0},
+    {q:"من هو مؤسس الإمبراطورية الرومانية؟",opts:["أغسطس قيصر","يوليوس قيصر","مارك أنطوني","نيرون"],c:0},
+    {q:"في أي قرن بُني سور الصين العظيم؟",opts:["القرن الثالث ق.م","القرن الأول م","القرن الخامس","القرن العاشر"],c:0},
+    {q:"من هو مخترع الطباعة؟",opts:["يوهانس غوتنبرغ","لورنز يانتسن","تشانغ هنغ","بي شنغ"],c:0},
+    {q:"في أي عام اكتشف كولومبوس أمريكا؟",opts:["1492","1498","1500","1488"],c:0},
+    {q:"من هو القائد الذي فتح القسطنطينية؟",opts:["السلطان محمد الفاتح","صلاح الدين","تيمورلنك","السلطان سليمان"],c:0},
+    {q:"متى انتهت الحرب الباردة؟",opts:["1991","1989","1985","1993"],c:0},
+    {q:"من كتب الإلياذة والأوديسا؟",opts:["هوميروس","أفلاطون","سقراط","أرسطو"],c:0},
+    {q:"في أي مدينة وُقّعت وثيقة الماغنا كارتا؟",opts:["ووترلو","لندن","أكسفورد","كانتربري"],c:0},
+    {q:"كم دامت الحرب العالمية الأولى؟",opts:["4 سنوات","3 سنوات","5 سنوات","6 سنوات"],c:0},
+    {q:"من هو أول إنسان يصل إلى القمر؟",opts:["نيل أرمسترونغ","باز ألدرين","يوري غاغارين","جون غلين"],c:0},
+    {q:"في أي عام وُلد النبي إبراهيم عليه السلام تقريبًا وفق المصادر التاريخية؟",opts:["2000 ق.م","1000 ق.م","500 ق.م","3000 ق.م"],c:0},
+    {q:"من هو مؤسس الإمبراطورية المغولية؟",opts:["جنكيز خان","تيمورلنك","هولاكو","قبلاي خان"],c:0},
+    {q:"في أي عام أُعلن قيام دولة إسرائيل؟",opts:["1948","1945","1950","1952"],c:0},
+    {q:"من قاد ثورة البلاشفة في روسيا؟",opts:["لينين","ستالين","تروتسكي","نيكولاي الثاني"],c:0},
+  ],
+  geo:[
+    {q:"ما هي أكبر قارة في العالم؟",opts:["آسيا","أفريقيا","أمريكا الشمالية","أوروبا"],c:0},
+    {q:"ما هو أطول نهر في العالم؟",opts:["النيل","الأمازون","المسيسيبي","اليانغتسي"],c:0},
+    {q:"ما هي أعلى قمة جبلية في العالم؟",opts:["إيفرست","K2","كانشنجانغا","لوتسه"],c:0},
+    {q:"ما هي عاصمة أستراليا؟",opts:["كانبيرا","سيدني","ملبورن","بريزبن"],c:0},
+    {q:"ما هي أكبر دولة في العالم مساحةً؟",opts:["روسيا","الصين","كندا","الولايات المتحدة"],c:0},
+    {q:"ما هي أصغر دولة في العالم؟",opts:["الفاتيكان","موناكو","سان مارينو","ليختنشتاين"],c:0},
+    {q:"كم عدد محيطات العالم؟",opts:["5","4","6","3"],c:0},
+    {q:"ما هي عاصمة البرازيل؟",opts:["برازيليا","ريو دي جانيرو","ساو باولو","بيلو هوريزونتي"],c:0},
+    {q:"أين يقع برج إيفل؟",opts:["باريس","لندن","روما","برلين"],c:0},
+    {q:"ما هي أكثر دول العالم اكتظاظًا بالسكان؟",opts:["الهند","الصين","الولايات المتحدة","إندونيسيا"],c:0},
+    {q:"ما هو أعمق بحيرة في العالم؟",opts:["بايكال","تيتيكاكا","ميشيغان","فيكتوريا"],c:0},
+    {q:"في أي قارة تقع مصر؟",opts:["أفريقيا","آسيا","أوروبا","أمريكا"],c:0},
+    {q:"ما هي عاصمة كندا؟",opts:["أوتاوا","تورنتو","فانكوفر","مونتريال"],c:0},
+    {q:"ما هي عاصمة اليابان؟",opts:["طوكيو","أوساكا","كيوتو","هيروشيما"],c:0},
+    {q:"ما هو أطول جبل في أمريكا اللاتينية؟",opts:["أكونكاغوا","إيفرست","كيليمنجارو","مونت بلان"],c:0},
+    {q:"في أي بلد يقع نهر الأمازون معظمه؟",opts:["البرازيل","كولومبيا","بيرو","فنزويلا"],c:0},
+    {q:"ما هي عاصمة المملكة العربية السعودية؟",opts:["الرياض","جدة","مكة المكرمة","الدمام"],c:0},
+    {q:"ما اسم أطول سور في العالم؟",opts:["سور الصين العظيم","سور هادريان","سور برلين","سور القدس"],c:0},
+    {q:"في أي مدينة يقع الكولوسيوم؟",opts:["روما","أثينا","مدريد","القاهرة"],c:0},
+    {q:"ما هي أكبر صحراء حارة في العالم؟",opts:["الصحراء الكبرى","ربع الخالي","جوبي","كلهاري"],c:0},
+  ],
+  general:[
+    {q:"كم عدد ألوان قوس قزح؟",opts:["7","6","8","5"],c:0},
+    {q:"من كتبت رواية هاري بوتر؟",opts:["ج.ك. رولينغ","ستيفن كينغ","جي.آر.آر. تولكين","دان براون"],c:0},
+    {q:"كم نجمة في علم الولايات المتحدة؟",opts:["50","48","52","45"],c:0},
+    {q:"من اخترع الهاتف؟",opts:["ألكسندر غراهام بيل","توماس إيديسون","نيكولا تسلا","ماركوني"],c:0},
+    {q:"في أي عام تأسست الأمم المتحدة؟",opts:["1945","1950","1939","1960"],c:0},
+    {q:"كم دقيقة في اليوم الواحد؟",opts:["1440","1420","1460","1400"],c:0},
+    {q:"ما هي أسرع سيارة في العالم من حيث السرعة القصوى؟",opts:["بوغاتي شيرون","لامبورغيني أفينتادور","فيراري","مكلارين"],c:0},
+    {q:"من اخترع المصباح الكهربائي؟",opts:["توماس إيديسون","ألكسندر غراهام بيل","نيكولا تسلا","بنجامين فرانكلين"],c:0},
+    {q:"ما هي لغة البرمجة الأكثر انتشارًا في العالم؟",opts:["Python","Java","C++","JavaScript"],c:0},
+    {q:"كم حرفًا في اللغة العربية؟",opts:["28","26","30","24"],c:0},
+    {q:"من هو مؤسس شركة آبل؟",opts:["ستيف جوبز","بيل غيتس","مارك زوكربرغ","جيف بيزوس"],c:0},
+    {q:"في أي عام أُطلق الإنترنت للعامة؟",opts:["1991","1989","1995","2000"],c:0},
+    {q:"ما هو أكبر محيط في العالم؟",opts:["المحيط الهادئ","المحيط الأطلسي","المحيط الهندي","المحيط المتجمد"],c:0},
+    {q:"كم يوم في السنة الكبيسة؟",opts:["366","365","367","364"],c:0},
+    {q:"ما هي عاصمة الإمارات العربية المتحدة؟",opts:["أبوظبي","دبي","الشارقة","عجمان"],c:0},
+    {q:"من رسم لوحة الموناليزا؟",opts:["ليوناردو دا فينشي","مايكل أنجلو","رافائيل","فان غوغ"],c:0},
+    {q:"ما هو أكبر كوكب صخري في المجموعة الشمسية؟",opts:["الأرض","الزهرة","المريخ","عطارد"],c:0},
+    {q:"كم غرفة في متاهة شيرلوك هولمز التلفزيونية الشهيرة؟",opts:["221B","221A","221C","221"],c:0},
+    {q:"ما هي أول دولة عربية تستضيف كأس العالم؟",opts:["قطر","السعودية","الإمارات","مصر"],c:0},
+    {q:"من هو مخترع الراديو؟",opts:["غوليلمو ماركوني","نيكولا تسلا","توماس إيديسون","هيريتز"],c:0},
+  ]
+};
+
+const CATS = [
+  {id:'science', name:'العلوم', icon:'🔬', color:'#06b6d4'},
+  {id:'sports',  name:'الرياضة',icon:'⚽', color:'#10b981'},
+  {id:'history', name:'التاريخ',icon:'📜', color:'#f59e0b'},
+  {id:'geo',     name:'الجغرافيا',icon:'🌍',color:'#8b5cf6'},
+  {id:'general', name:'معلومات عامة',icon:'💡',color:'#ef4444'},
+  {id:'mixed',   name:'مختلط',  icon:'🎲', color:'#64748b'},
+];
+
+const OPP_NAMES = [
+  'أحمد الذكي','سارة المتحدية','خالد الخبير','نورة المتفوقة',
+  'محمد العبقري','فاطمة الذكية','علي السريع','هند المعرفية',
+  'يوسف الثاقب','ريم المتألقة','عمر المحترف','لينا الرائعة',
+];
+
+const RANKS = [
+  {name:'برونزي',key:'bronze',cls:'r-bronze',icon:'🥉',min:0,max:999},
+  {name:'فضي',   key:'silver',cls:'r-silver',icon:'⚔️',min:1000,max:1499},
+  {name:'ذهبي',  key:'gold',  cls:'r-gold',  icon:'✨',min:1500,max:1999},
+  {name:'بلاتيني',key:'plat', cls:'r-platinum',icon:'💎',min:2000,max:2499},
+  {name:'ألماسي',key:'dia',   cls:'r-diamond',icon:'🔷',min:2500,max:2999},
+  {name:'ماستر', key:'master',cls:'r-master',icon:'🔮',min:3000,max:3499},
+  {name:'غراند ماستر',key:'gm',cls:'r-grandmaster',icon:'👑',min:3500,max:3999},
+  {name:'متحدي', key:'chal',  cls:'r-challenger',icon:'⚡',min:4000,max:Infinity},
+];
+
+const STREAK_MULT = [1, 1.3, 1.6, 2.0, 2.5, 3.0];
+const BASE_DMG = 80;
+const Q_COUNT = 10;
+const Q_TIME = 15;
+
+// ============================================================
+// STATE
+// ============================================================
+let G = {
+  name:'لاعب جديد', elo:1000, wins:0, losses:0,
+  oppName:'', oppElo:1000,
+  cat:'mixed',
+  matchQ:[], qIdx:0,
+  youHp:1000, oppHp:1000,
+  youStreak:0, oppStreak:0,
+  youMaxStreak:0, oppMaxStreak:0,
+  youCorrect:0, youTotalDmg:0,
+  answered:false,
+  timer:null, timeLeft:Q_TIME,
+  aiTimer:null, aiDelay:0,
+  aiIntervalStep:null,
+};
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load', () => {
+  loadData();
+  buildCatGrid();
+  updateHome();
+  buildLB();
+  document.getElementById('nameInp').value = G.name;
+  document.getElementById('nameInp').addEventListener('keydown', e => { if(e.key==='Enter') saveName(); });
+});
+
+function loadData() {
+  try {
+    const d = JSON.parse(localStorage.getItem('bom_v2') || '{}');
+    if(d.name) G.name = d.name;
+    if(d.elo !== undefined) G.elo = d.elo;
+    if(d.wins !== undefined) G.wins = d.wins;
+    if(d.losses !== undefined) G.losses = d.losses;
+  } catch(e) {}
+  // Seed LB
+  if(!localStorage.getItem('bom_lb')) {
+    localStorage.setItem('bom_lb', JSON.stringify([
+      {name:'العبقري أحمد',elo:4200,wins:320,losses:80},
+      {name:'سارة المتحدية',elo:3800,wins:280,losses:90},
+      {name:'خالد الخبير',elo:3200,wins:220,losses:100},
+      {name:'نورة المتفوقة',elo:2700,wins:180,losses:110},
+      {name:'محمد الذكي',elo:2100,wins:140,losses:95},
+    ]));
+  }
+}
+
+function saveData() {
+  localStorage.setItem('bom_v2', JSON.stringify({name:G.name,elo:G.elo,wins:G.wins,losses:G.losses}));
+  updateLB();
+}
+
+function updateLB() {
+  try {
+    let lb = JSON.parse(localStorage.getItem('bom_lb') || '[]');
+    const idx = lb.findIndex(p => p.name === G.name);
+    const entry = {name:G.name,elo:G.elo,wins:G.wins,losses:G.losses};
+    if(idx >= 0) lb[idx] = entry; else lb.push(entry);
+    lb.sort((a,b) => b.elo-a.elo);
+    lb = lb.slice(0,10);
+    localStorage.setItem('bom_lb', JSON.stringify(lb));
+  } catch(e) {}
+}
+
+function buildLB() {
+  const lb = JSON.parse(localStorage.getItem('bom_lb') || '[]');
+  const medals = ['🥇','🥈','🥉'];
+  const list = document.getElementById('lbList');
+  list.innerHTML = '';
+  lb.slice(0,5).forEach((p,i) => {
+    const r = getRank(p.elo);
+    const me = p.name === G.name;
+    const row = document.createElement('div');
+    row.className = 'lb-row';
+    if(me){ row.style.background='rgba(124,58,237,.1)'; row.style.border='1px solid rgba(124,58,237,.3)'; }
+    row.innerHTML = `<div class="lb-pos">${medals[i]||'#'+(i+1)}</div>
+      <div class="lb-name">${p.name}${me?' <span style="color:var(--p);font-size:10px">(أنت)</span>':''}</div>
+      <span class="rank ${r.cls}" style="font-size:10px">${r.icon}</span>
+      <div class="lb-elo">${p.elo}</div>`;
+    list.appendChild(row);
+  });
+  if(!lb.length) list.innerHTML='<div style="text-align:center;color:var(--muted);padding:18px;font-size:13px">لا يوجد لاعبون — كن الأول!</div>';
+}
+
+function saveName() {
+  const v = document.getElementById('nameInp').value.trim();
+  if(!v) { toast('أدخل اسمك أولاً!'); return; }
+  G.name = v; saveData(); updateHome(); toast('✅ تم حفظ الاسم');
+}
+
+function updateHome() {
+  const r = getRank(G.elo);
+  document.getElementById('hName').textContent = G.name;
+  document.getElementById('hElo').innerHTML = G.elo+' <span>ELO</span>';
+  const rb = document.getElementById('hRank');
+  rb.className='rank '+r.cls; rb.textContent=r.icon+' '+r.name;
+  document.getElementById('hW').textContent=G.wins;
+  document.getElementById('hL').textContent=G.losses;
+  const tot=G.wins+G.losses;
+  document.getElementById('hWR').textContent=tot>0?Math.round(G.wins/tot*100)+'%':'-';
+  const pct=((G.elo-r.min)/(r.max===Infinity?500:r.max-r.min+1))*100;
+  document.getElementById('epFill').style.width=Math.min(100,Math.max(0,pct))+'%';
+  document.getElementById('epFrom').textContent=r.name;
+  const next=RANKS.find(x=>x.min>G.elo);
+  document.getElementById('epTo').textContent=next?next.name:'MAX';
+  buildLB();
+}
+
+// ============================================================
+// CATEGORY
+// ============================================================
+function buildCatGrid() {
+  const grid = document.getElementById('catGrid');
+  CATS.forEach(cat => {
+    const btn = document.createElement('div');
+    btn.className='cat-btn';
+    const cnt = cat.id==='mixed'?'كل الفئات':QUESTIONS[cat.id]?.length+' سؤال';
+    btn.innerHTML=`<div class="cat-icon">${cat.icon}</div><div class="cat-name">${cat.name}</div><div class="cat-count">${cnt}</div>`;
+    btn.style.setProperty('--cat-color', cat.color);
+    btn.onclick = () => {
+      document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      G.cat = cat.id;
+      setTimeout(()=>startMatchmaking(), 300);
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function goCategory() { show('sc'); }
+
+// ============================================================
+// MATCHMAKING
+// ============================================================
+function startMatchmaking() {
+  show('smm');
+  document.getElementById('mmSearch').style.display='block';
+  document.getElementById('mmFound').style.display='none';
+
+  G.oppName = OPP_NAMES[Math.floor(Math.random()*OPP_NAMES.length)];
+  G.oppElo = Math.max(50, G.elo + Math.floor((Math.random()-.45)*500));
+
+  setTimeout(() => {
+    document.getElementById('mmSearch').style.display='none';
+    document.getElementById('mmFound').style.display='block';
+    document.getElementById('mmYouName').textContent=G.name;
+    document.getElementById('mmOppName').textContent=G.oppName;
+    const yr=getRank(G.elo), or=getRank(G.oppElo);
+    const yb=document.getElementById('mmYouRank');
+    yb.className='rank '+yr.cls; yb.textContent=yr.icon+' '+yr.name;
+    const ob=document.getElementById('mmOppRank');
+    ob.className='rank '+or.cls; ob.textContent=or.icon+' '+or.name;
+    setTimeout(startGame, 1800);
+  }, 2200);
+}
+
+// ============================================================
+// GAME
+// ============================================================
+function startGame() {
+  // Build question set
+  let pool = [];
+  if(G.cat==='mixed') {
+    Object.values(QUESTIONS).forEach(arr => pool.push(...arr));
+  } else {
+    pool = [...(QUESTIONS[G.cat]||[])];
+  }
+  pool = shuffle(pool);
+  G.matchQ = pool.slice(0, Q_COUNT);
+
+  // Reset state
+  G.qIdx=0; G.youHp=1000; G.oppHp=1000;
+  G.youStreak=0; G.oppStreak=0; G.youMaxStreak=0;
+  G.youCorrect=0; G.youTotalDmg=0;
+  G.answered=false;
+
+  // Set labels
+  document.getElementById('youLabel').textContent='🎯 '+G.name;
+  document.getElementById('oppLabel').textContent='🔥 '+G.oppName;
+
+  show('sg');
+  buildQProgress();
+  showQuestion();
+}
+
+function showQuestion() {
+  if(G.qIdx >= G.matchQ.length) { endGame(); return; }
+  const q = G.matchQ[G.qIdx];
+  G.answered = false;
+  G.timeLeft = Q_TIME;
+
+  // UI
+  document.getElementById('qNumLabel').textContent='س '+(G.qIdx+1)+' / '+Q_COUNT;
+  document.getElementById('qCat').textContent = getCatName(q);
+  document.getElementById('qText').textContent = q.q;
+  updateQProgress();
+  updateHpUI();
+  updateStreakUI();
+
+  // Build options
+  const grid = document.getElementById('optsGrid');
+  grid.innerHTML='';
+  const labels = ['أ','ب','ج','د'];
+  q.opts.forEach((opt,i) => {
+    const btn = document.createElement('button');
+    btn.className='opt';
+    btn.textContent=labels[i]+') '+opt;
+    btn.onclick=()=>playerAnswer(i, btn, q);
+    grid.appendChild(btn);
+  });
+
+  // Timer
+  clearInterval(G.timer);
+  startTimer(q);
+
+  // AI delay (varies by difficulty)
+  clearTimeout(G.aiTimer);
+  const aiCorrect = Math.random() < .62;
+  const minDelay = 3000, maxDelay = 12000;
+  G.aiDelay = minDelay + Math.random()*(maxDelay-minDelay);
+  G.aiTimer = setTimeout(()=>aiAnswer(q, aiCorrect), G.aiDelay);
+}
+
+function startTimer(q) {
+  const circ = document.getElementById('timerCircle');
+  const numEl = document.getElementById('timerNum');
+  const C = 169.64;
+  G.timeLeft = Q_TIME;
+  circ.style.strokeDashoffset='0';
+  circ.style.stroke='var(--p)';
+
+  G.timer = setInterval(()=>{
+    G.timeLeft--;
+    numEl.textContent=G.timeLeft;
+    const offset = (1-(G.timeLeft/Q_TIME))*C;
+    circ.style.strokeDashoffset=offset;
+    if(G.timeLeft<=5) { circ.style.stroke='var(--bad)'; numEl.style.color='var(--bad)'; }
+    else if(G.timeLeft<=10) { circ.style.stroke='var(--gold)'; numEl.style.color='var(--gold)'; }
+    else { circ.style.stroke='var(--p)'; numEl.style.color='var(--text)'; }
+    if(G.timeLeft<=0) {
+      clearInterval(G.timer);
+      clearTimeout(G.aiTimer);
+      if(!G.answered) timeout(q);
+    }
+  },1000);
+}
+
+function playerAnswer(chosen, btn, q) {
+  if(G.answered) return;
+  G.answered=true;
+  clearInterval(G.timer);
+  clearTimeout(G.aiTimer);
+
+  const correct = chosen === q.c;
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach(b=>b.disabled=true);
+  opts[q.c].classList.add('correct');
+  if(!correct) btn.classList.add('wrong');
+
+  if(correct) {
+    G.youCorrect++;
+    G.youStreak++;
+    if(G.youStreak>G.youMaxStreak) G.youMaxStreak=G.youStreak;
+    const mult = getStreakMult(G.youStreak);
+    const speedBonus = (G.timeLeft/Q_TIME)*40;
+    const dmg = Math.round((BASE_DMG+speedBonus)*mult);
+    G.youTotalDmg+=dmg;
+    G.oppHp=Math.max(0, G.oppHp-dmg);
+    showDmg(dmg, true);
+    if(G.youStreak>1) toast('🔥 Streak x'+G.youStreak+' — ضرر '+dmg+' نقطة!');
+  } else {
+    G.youStreak=0;
+    toast('❌ إجابة خاطئة!');
+  }
+
+  updateHpUI();
+  updateStreakUI();
+
+  // Check if opponent already answered (simulated)
+  setTimeout(()=>nextQ(), 1400);
+}
+
+function aiAnswer(q, correct) {
+  if(G.oppHp<=0) return;
+  if(correct) {
+    G.oppStreak++;
+    const mult = getStreakMult(G.oppStreak);
+    const speedPct = .3+Math.random()*.5;
+    const speedBonus = speedPct*40;
+    const dmg = Math.round((BASE_DMG+speedBonus)*mult);
+    G.youHp=Math.max(0, G.youHp-dmg);
+    showDmg(dmg, false);
+    document.getElementById('dmgOverlay').classList.add('hit');
+    setTimeout(()=>document.getElementById('dmgOverlay').classList.remove('hit'),500);
+  } else {
+    G.oppStreak=0;
+  }
+  updateHpUI();
+  updateStreakUI();
+  if(!G.answered) {
+    G.answered=true;
+    clearInterval(G.timer);
+    const opts=document.querySelectorAll('.opt');
+    opts.forEach(b=>b.disabled=true);
+    opts[q.c].classList.add('reveal');
+    setTimeout(()=>nextQ(), 1300);
+  }
+}
+
+function timeout(q) {
+  G.answered=true;
+  G.youStreak=0;
+  const opts=document.querySelectorAll('.opt');
+  opts.forEach(b=>b.disabled=true);
+  opts[q.c].classList.add('reveal');
+  updateStreakUI();
+  toast('⏰ انتهى الوقت!');
+  setTimeout(()=>nextQ(), 1200);
+}
+
+function nextQ() {
+  G.qIdx++;
+  if(G.youHp<=0||G.oppHp<=0||G.qIdx>=Q_COUNT) { endGame(); return; }
+  showQuestion();
+}
+
+function getStreakMult(s) {
+  return STREAK_MULT[Math.min(s, STREAK_MULT.length-1)];
+}
+
+function showDmg(dmg, isPlayerDmg) {
+  const d=document.createElement('div');
+  d.className='dmg-popup';
+  d.textContent=(isPlayerDmg?'-':'+')+'⚡'+dmg;
+  d.style.color=isPlayerDmg?'var(--bad)':'var(--ok)';
+  d.style.left=(30+Math.random()*40)+'vw';
+  d.style.top=(20+Math.random()*20)+'vh';
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(),900);
+}
+
+function updateHpUI() {
+  const yPct=Math.max(0,(G.youHp/1000)*100);
+  const oPct=Math.max(0,(G.oppHp/1000)*100);
+  document.getElementById('youHpBar').style.width=yPct+'%';
+  document.getElementById('oppHpBar').style.width=oPct+'%';
+  document.getElementById('youHpVal').textContent=G.youHp;
+  document.getElementById('oppHpVal').textContent=G.oppHp;
+  // Color danger
+  if(yPct<25) document.getElementById('youHpBar').style.filter='brightness(1.3) hue-rotate(280deg)';
+  else document.getElementById('youHpBar').style.filter='none';
+}
+
+function updateStreakUI() {
+  document.getElementById('youStreak').textContent=G.youStreak;
+  document.getElementById('youMult').textContent=getStreakMult(G.youStreak)+'x';
+  document.getElementById('oppStreak').textContent=G.oppStreak;
+  document.getElementById('oppMult').textContent=getStreakMult(G.oppStreak)+'x';
+  const yb=document.getElementById('youStreakBadge');
+  const ob=document.getElementById('oppStreakBadge');
+  if(G.youStreak>=3) yb.style.background='rgba(245,158,11,.25)'; else yb.style.background='rgba(245,158,11,.1)';
+  if(G.oppStreak>=3) ob.style.background='rgba(245,158,11,.25)'; else ob.style.background='rgba(245,158,11,.1)';
+}
+
+function buildQProgress() {
+  const dots=document.getElementById('qpDots');
+  dots.innerHTML='';
+  for(let i=0;i<Q_COUNT;i++) {
+    const d=document.createElement('div');
+    d.className='qp-dot';
+    d.id='qpd'+i;
+    dots.appendChild(d);
+  }
+}
+
+function updateQProgress() {
+  for(let i=0;i<Q_COUNT;i++) {
+    const d=document.getElementById('qpd'+i);
+    if(!d) continue;
+    d.className='qp-dot'+(i<G.qIdx?' done':i===G.qIdx?' current':'');
+  }
+}
+
+// ============================================================
+// END GAME
+// ============================================================
+function endGame() {
+  clearInterval(G.timer);
+  clearTimeout(G.aiTimer);
+
+  const youWon = G.youHp > G.oppHp;
+  const tie = G.youHp === G.oppHp;
+  const margin = Math.abs(G.youHp-G.oppHp);
+  let eloDelta;
+  if(tie) eloDelta=0;
+  else if(youWon) eloDelta = margin>300?32:25;
+  else eloDelta = margin>300?-12:-20;
+
+  const rankBefore = getRank(G.elo);
+  G.elo = Math.max(0, G.elo+eloDelta);
+  const rankAfter = getRank(G.elo);
+  if(youWon) G.wins++; else if(!tie) G.losses++;
+  saveData();
+
+  // Result screen
+  document.getElementById('resTrophy').textContent = youWon?'🏆':tie?'🤝':'💔';
+  const title=document.getElementById('resTitle');
+  title.textContent = youWon?'🎉 فزت!':tie?'⚖️ تعادل!':'😔 خسرت';
+  title.className='result-title '+(youWon?'win':tie?'':'loss');
+
+  const delta=document.getElementById('resDelta');
+  delta.textContent=(eloDelta>0?'+':'')+eloDelta+' ELO';
+  delta.className='elo-delta '+(eloDelta>=0?'elo-pos':'elo-neg');
+
+  document.getElementById('rsCorrect').textContent=G.youCorrect+'/'+Q_COUNT;
+  document.getElementById('rsMaxStreak').textContent='x'+G.youMaxStreak;
+  document.getElementById('rsDmg').textContent=G.youTotalDmg;
+
+  const rb=document.getElementById('rankBefore');
+  rb.className='rank '+rankBefore.cls; rb.textContent=rankBefore.icon+' '+rankBefore.name;
+  const ra=document.getElementById('rankAfter');
+  ra.className='rank '+rankAfter.cls; ra.textContent=rankAfter.icon+' '+rankAfter.name;
+  document.getElementById('newElo').textContent=G.elo+' ELO';
+
+  if(youWon) spawnParticles();
+  show('sr');
+  updateHome();
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  const el=document.getElementById(id);
+  el.classList.add('on');
+}
+
+function getRank(elo) {
+  for(let i=RANKS.length-1;i>=0;i--) if(elo>=RANKS[i].min) return RANKS[i];
+  return RANKS[0];
+}
+
+function getCatName(q) {
+  for(const [id,arr] of Object.entries(QUESTIONS)) {
+    if(arr.includes(q)) return CATS.find(c=>c.id===id)?.name||'';
+  }
+  return G.cat==='mixed'?'مختلط':CATS.find(c=>c.id===G.cat)?.name||'';
+}
+
+function shuffle(arr) {
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function spawnParticles() {
+  const cols=['#ffd700','#7c3aed','#06b6d4','#f59e0b','#10b981','#ef4444','#fff'];
+  for(let i=0;i<70;i++) {
+    setTimeout(()=>{
+      const p=document.createElement('div');
+      p.className='particle';
+      const sz=6+Math.random()*10;
+      p.style.cssText=`left:${Math.random()*100}vw;top:${40+Math.random()*50}vh;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};animation-duration:${.8+Math.random()*.7}s;animation-delay:${Math.random()*.3}s`;
+      document.body.appendChild(p);
+      setTimeout(()=>p.remove(),1500);
+    },i*18);
+  }
+}
+
+function toast(msg, dur=2400) {
+  const t=document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);},dur);
+}
+</script>
+</body>
+</html>
