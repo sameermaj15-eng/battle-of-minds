@@ -45,7 +45,6 @@ body::before{
     radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 50%);
 }
 
-/* APP CONTAINER */
 .app-viewport { display:flex;flex-direction:column;min-height:100vh;position:relative;z-index:1; }
 
 /* HEADER */
@@ -55,9 +54,7 @@ body::before{
   display:flex;align-items:center;justify-content:space-between;padding:0 28px;
   position:sticky;top:0;z-index:100;
 }
-.brand-logo {
-  display:flex;align-items:center;gap:12px;cursor:pointer;
-}
+.brand-logo { display:flex;align-items:center;gap:12px;cursor:pointer; }
 .logo-icon {
   width:44px;height:44px;background:linear-gradient(135deg,#7c3aed,#06b6d4);
   border-radius:12px;display:flex;align-items:center;justify-content:center;
@@ -69,7 +66,7 @@ body::before{
 
 .header-user-chip {
   display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.04);
-  border:1px solid var(--border);padding:6px 16px;border-radius:30px;
+  border:1px solid var(--border);padding:6px 16px;border-radius:30px;cursor:pointer;
 }
 .user-chip-avatar { width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:16px; }
 
@@ -80,10 +77,7 @@ body::before{
   font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;
   transition:all 0.25s ease;position:relative;overflow:hidden;
 }
-.btn-primary {
-  background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;
-  box-shadow:0 0 25px var(--primary-glow);
-}
+.btn-primary { background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;box-shadow:0 0 25px var(--primary-glow); }
 .btn-primary:hover { box-shadow:0 0 35px var(--primary-glow);transform:translateY(-2px); }
 .btn-hero {
   background:linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4);
@@ -107,7 +101,7 @@ body::before{
 }
 .glass-panel:hover { border-color:var(--border-glow); }
 
-/* AUTH SCREEN DESIGN (Matching Image 3 & 4) */
+/* AUTH CONTAINER */
 .auth-container { width:100%;max-width:460px;padding:40px;text-align:center; }
 .auth-crest { font-size:64px;margin-bottom:12px;filter:drop-shadow(0 0 30px var(--primary-glow)); }
 .auth-tabs { display:flex;gap:6px;background:rgba(0,0,0,0.4);padding:4px;border-radius:14px;margin:24px 0; }
@@ -125,9 +119,6 @@ body::before{
   transition:border-color 0.2s, box-shadow 0.2s;
 }
 .input-control:focus { border-color:var(--primary);box-shadow:0 0 18px var(--primary-glow); }
-.social-login { display:flex;gap:12px;justify-content:center;margin-top:20px; }
-.social-icon { width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:all 0.2s; }
-.social-icon:hover { background:rgba(255,255,255,0.12);transform:translateY(-2px); }
 
 /* DASHBOARD MAIN LAYOUT (Matching Image 2) */
 .dashboard-grid {
@@ -242,78 +233,19 @@ body::before{
     </div>
     <div style="display:flex;align-items:center;gap:14px;">
       <button class="btn btn-secondary" onclick="showScreen('ranksPage')">🛡️ نظام الرتب</button>
-      <div class="header-user-chip" id="userHeaderChip" style="display:none">
+      <div class="header-user-chip" id="userHeaderChip" onclick="showScreen('auth')">
         <div class="user-chip-avatar" id="hAvatar">🎯</div>
         <div>
-          <div style="font-size:13px;font-weight:700;" id="hUser">لاعب</div>
-          <div style="font-size:10px;color:var(--gold);" id="hElo">1000 ELO</div>
+          <div style="font-size:13px;font-weight:700;" id="hUser">لاعب جديد</div>
+          <div style="font-size:10px;color:var(--gold);" id="hElo">1037 ELO</div>
         </div>
       </div>
-      <button class="btn btn-danger" id="logoutBtn" onclick="logout()" style="display:none">خروج</button>
+      <button class="btn btn-secondary" id="authBtn" onclick="showScreen('auth')">تسجيل الدخول / حساب جديد</button>
     </div>
   </header>
 
-  <!-- SCREEN 1: AUTH (Matching Image 3 & 4) -->
-  <div class="screen active" id="screenAuth">
-    <div class="glass-panel auth-container">
-      <div class="auth-crest">⚔️</div>
-      <h1 style="font-size:32px;font-weight:900;">نزال Lor</h1>
-      <p style="font-size:13px;color:var(--muted);margin-top:2px;">لعبة الأسئلة التنافسية · BATTLE OF MINDS</p>
-
-      <div class="auth-tabs">
-        <div class="auth-tab active" id="tabLoginBtn" onclick="switchAuthTab('login')">تسجيل الدخول</div>
-        <div class="auth-tab" id="tabRegBtn" onclick="switchAuthTab('register')">إنشاء حساب</div>
-      </div>
-
-      <!-- LOGIN FORM -->
-      <form id="loginForm" onsubmit="handleLogin(event)">
-        <div class="form-group">
-          <label class="form-label">البريد الإلكتروني أو اسم المستخدم</label>
-          <div class="input-wrap">
-            <span class="input-icon">👤</span>
-            <input class="input-control" id="loginUsername" type="text" placeholder="أدخل اسم المستخدم..." required>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">كلمة المرور</label>
-          <div class="input-wrap">
-            <span class="input-icon">🔒</span>
-            <input class="input-control" id="loginPassword" type="password" placeholder="أدخل كلمة المرور..." required>
-          </div>
-        </div>
-        <button class="btn btn-primary btn-hero" style="width:100%;margin-top:10px;font-size:16px;padding:14px;" type="submit">تسجيل الدخول ➔</button>
-      </form>
-
-      <!-- REGISTER FORM -->
-      <form id="regForm" onsubmit="handleRegister(event)" style="display:none">
-        <div class="form-group">
-          <label class="form-label">اسم المستخدم (Unique Username)</label>
-          <div class="input-wrap">
-            <span class="input-icon">👤</span>
-            <input class="input-control" id="regUsername" type="text" placeholder="اختر اسم مستخدم فريد..." required minlength="3" maxlength="18">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">كلمة المرور</label>
-          <div class="input-wrap">
-            <span class="input-icon">🔒</span>
-            <input class="input-control" id="regPassword" type="password" placeholder="كلمة المرور..." required minlength="4">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">تأكيد كلمة المرور</label>
-          <div class="input-wrap">
-            <span class="input-icon">🔒</span>
-            <input class="input-control" id="regPasswordConfirm" type="password" placeholder="تأكيد كلمة المرور..." required minlength="4">
-          </div>
-        </div>
-        <button class="btn btn-primary btn-hero" style="width:100%;margin-top:10px;font-size:16px;padding:14px;" type="submit">إنشاء حساب 👤+</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- SCREEN 2: DASHBOARD (Matching Image 2) -->
-  <div class="screen" id="screenDashboard">
+  <!-- SCREEN 1: DASHBOARD (Default view matching Image 2!) -->
+  <div class="screen active" id="screenDashboard">
     <div class="dashboard-grid">
 
       <!-- LEFT COLUMN: LEADERBOARD -->
@@ -392,6 +324,67 @@ body::before{
     </div>
   </div>
 
+  <!-- SCREEN 2: AUTH MODAL (Matching Image 3 & 4) -->
+  <div class="screen" id="screenAuth">
+    <div class="glass-panel auth-container">
+      <div class="auth-crest">⚔️</div>
+      <h1 style="font-size:32px;font-weight:900;">نزال Lor</h1>
+      <p style="font-size:13px;color:var(--muted);margin-top:2px;">لعبة الأسئلة التنافسية · BATTLE OF MINDS</p>
+
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tabLoginBtn" onclick="switchAuthTab('login')">تسجيل الدخول</div>
+        <div class="auth-tab" id="tabRegBtn" onclick="switchAuthTab('register')">إنشاء حساب</div>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">اسم المستخدم</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input class="input-control" id="loginUsername" type="text" placeholder="أدخل اسم المستخدم..." required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">كلمة المرور</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input class="input-control" id="loginPassword" type="password" placeholder="أدخل كلمة المرور..." required>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-hero" style="width:100%;margin-top:10px;font-size:16px;padding:14px;" type="submit">تسجيل الدخول ➔</button>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form id="regForm" onsubmit="handleRegister(event)" style="display:none">
+        <div class="form-group">
+          <label class="form-label">اسم المستخدم (Unique Username)</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input class="input-control" id="regUsername" type="text" placeholder="اختر اسم مستخدم فريد..." required minlength="3" maxlength="18">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">كلمة المرور</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input class="input-control" id="regPassword" type="password" placeholder="كلمة المرور..." required minlength="4">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">تأكيد كلمة المرور</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input class="input-control" id="regPasswordConfirm" type="password" placeholder="تأكيد كلمة المرور..." required minlength="4">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-hero" style="width:100%;margin-top:10px;font-size:16px;padding:14px;" type="submit">إنشاء حساب 👤+</button>
+      </form>
+
+      <button class="btn btn-secondary" onclick="showScreen('dashboard')" style="margin-top:20px;">الاستمرار كزائر ←</button>
+    </div>
+  </div>
+
   <!-- SCREEN 3: RANK HIERARCHY PAGE (Matching Image 1 & 5) -->
   <div class="screen" id="screenRanksPage">
     <div class="ranks-page-wrap">
@@ -424,7 +417,7 @@ body::before{
     </div>
 
     <div id="gamePlayState" class="glass-panel arena-card" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div style="display:flex;justify-space-between;align-items:center;margin-bottom:20px;">
         <div>
           <div style="font-size:11px;color:var(--muted);">أنت</div>
           <div style="font-size:18px;font-weight:900;color:var(--primary)" id="arenaYouHp">1000 HP</div>
@@ -446,9 +439,6 @@ body::before{
 </div>
 
 <script>
-// ============================================================
-// RANK DEFINITIONS MATCHING IMAGES 1 & 5
-// ============================================================
 const RANKS = [
   { id:1, name:'الحديد',      icon:'⚪', num:'I',    min:0,    max:399,  cls:'iron' },
   { id:2, name:'البرونزي',   icon:'🥉', num:'II',   min:400,  max:799,  cls:'bronze' },
@@ -462,67 +452,43 @@ const RANKS = [
 ];
 
 const CATEGORIES = [
-  { id:'science',  name:'العلوم',      icon:'🧬', desc:'اختبر معلوماتك العلمية', count:'1200 سؤال' },
-  { id:'sports',   name:'الرياضة',     icon:'⚽', desc:'أسئلة عن الرياضة واللاعبين', count:'980 سؤال' },
-  { id:'history',  name:'التاريخ',     icon:'🏛️', desc:'تحدي معرفتك بالتاريخ', count:'1100 سؤال' },
-  { id:'general',  name:'ثقافة عامة',   icon:'🌍', desc:'أسئلة متنوعة وممتعة', count:'1500 سؤال' },
-  { id:'anime',    name:'أنمي',        icon:'🎨', desc:'عالم الأنمي والمانغا', count:'850 سؤال' },
-  { id:'onepiece', name:'ون بيس',      icon:'🏴‍☠️', desc:'ملك القراصنة والغراند لاين', count:'600 سؤال' },
-  { id:'hxh',      name:'هانتر x هانتر',icon:'🎣', desc:'عالم النين والصيادين', count:'500 سؤال' }
+  { id:'science',  name:'العلوم',      icon:'🧬', count:'1200 سؤال' },
+  { id:'sports',   name:'الرياضة',     icon:'⚽', count:'980 سؤال' },
+  { id:'history',  name:'التاريخ',     icon:'🏛️', count:'1100 سؤال' },
+  { id:'general',  name:'ثقافة عامة',   icon:'🌍', count:'1500 سؤال' },
+  { id:'anime',    name:'أنمي',        icon:'🎨', count:'850 سؤال' },
+  { id:'onepiece', name:'ون بيس',      icon:'🏴‍☠️', count:'600 سؤال' },
+  { id:'hxh',      name:'هانتر x هانتر',icon:'🎣', count:'500 سؤال' }
 ];
 
 const QUESTIONS_DATA = {
-  anime: [
-    {q:"ما اسم دفتر الموت في أنمي Death Note؟",opts:["Death Note","Death Book","Grimoire","Shinigami Note"],c:0},
-    {q:"ما هي تقنية ناروتو الشهيرة المستنسخة؟",opts:["كاجي بونشين نوجوتسو","راسينجان","شيدوري","أماتيراسو"],c:0},
-    {q:"من هي غوجو ساتورو في Jujutsu Kaisen؟",opts:["أقوى مستعمل طاقة ملعونة","ملك اللعنات","حاكم الزمان","رئيس المدرسة"],c:0}
-  ],
-  onepiece: [
-    {q:"ما هو اسم حلم لوفي الرئيسي؟",opts:["ملك القراصنة","أقوى سياف","حاكم البحار","مكتشف العالم"],c:0},
-    {q:"ما اسم فاكهة الشيطان التي أكلها لوفي؟",opts:["غومو غومو نو مي","ميرا ميرا نو مي","غورا غورا نو مي","أوب أوب نو مي"],c:0}
-  ],
-  hxh: [
-    {q:"من هو صديق غون المفضل وعضو عائلة زولديك؟",opts:["كيلوا","كورابيكا","يوريو","هيسوكا"],c:0},
-    {q:"ما اسم عصابة النين الإجرامية التي يقودها كورورو؟",opts:["عصابة العناكب","الزولديك","فرسان الكيميرا","الجمعية"],c:0}
-  ],
-  science: [
-    {q:"ما هو الرمز الكيميائي للماء؟",opts:["H₂O","CO₂","NaCl","O₂"],c:0},
-    {q:"كم عدد عظام جسم الإنسان البالغ؟",opts:["206","200","212","198"],c:0}
-  ],
-  sports: [
-    {q:"من فاز بكأس العالم 2022 في قطر؟",opts:["الأرجنتين","فرنسا","البرازيل","المغرب"],c:0}
-  ],
-  history: [
-    {q:"متى بدأت الحرب العالمية الأولى؟",opts:["1914","1912","1916","1918"],c:0}
-  ],
-  general: [
-    {q:"كم عدد ألوان قوس قزح؟",opts:["7","6","8","5"],c:0}
-  ]
+  science: [{q:"ما هو الرمز الكيميائي للماء؟",opts:["H₂O","CO₂","NaCl","O₂"],c:0}],
+  sports: [{q:"من فاز بكأس العالم 2022 في قطر؟",opts:["الأرجنتين","فرنسا","البرازيل","المغرب"],c:0}],
+  history: [{q:"متى بدأت الحرب العالمية الأولى؟",opts:["1914","1912","1916","1918"],c:0}],
+  general: [{q:"كم عدد ألوان قوس قزح؟",opts:["7","6","8","5"],c:0}],
+  anime: [{q:"ما اسم دفتر الموت في أنمي Death Note؟",opts:["Death Note","Death Book","Grimoire","Shinigami Note"],c:0}],
+  onepiece: [{q:"ما هو اسم حلم لوفي الرئيسي؟",opts:["ملك القراصنة","أقوى سياف","حاكم البحار","مكتشف العالم"],c:0}],
+  hxh: [{q:"من هو صديق غون المفضل وعضو عائلة زولديك؟",opts:["كيلوا","كورابيكا","يوريو","هيسوكا"],c:0}]
 };
 
-let currentUser = null;
+let currentUser = { username: 'لاعب جديد', elo: 1037, wins: 2, losses: 1 };
 let selectedCat = 'science';
 
-// INIT
 window.addEventListener('load', () => {
   renderCategories();
   renderRanksPage();
   renderRankTiersRows();
-  checkSession();
-});
 
-function checkSession() {
   const sess = localStorage.getItem('lor_user_session');
   if (sess) {
     const db = JSON.parse(localStorage.getItem('lor_users') || '{}');
     if (db[sess.toLowerCase()]) {
       currentUser = db[sess.toLowerCase()];
-      onLoginSuccess();
-      return;
     }
   }
-  showScreen('auth');
-}
+  updateDashboardUI();
+  showScreen('dashboard');
+});
 
 function switchAuthTab(tab) {
   if (tab === 'login') {
@@ -545,12 +511,8 @@ function handleRegister(e) {
   const passConf = document.getElementById('regPasswordConfirm').value;
 
   if (pass !== passConf) return toast('كلمتا المرور غير متطابقتين');
-  if (username.length < 3) return toast('اسم المستخدم قصير جداً');
-
   const db = JSON.parse(localStorage.getItem('lor_users') || '{}');
-  if (db[username.toLowerCase()]) {
-    return toast('❌ اسم المستخدم مسجّل مسبقاً! اختر اسماً آخر.');
-  }
+  if (db[username.toLowerCase()]) return toast('❌ اسم المستخدم مسجّل مسبقاً!');
 
   const user = { username: username, pass: btoa(pass), elo: 1037, wins: 2, losses: 1 };
   db[username.toLowerCase()] = user;
@@ -558,8 +520,9 @@ function handleRegister(e) {
   localStorage.setItem('lor_user_session', username);
 
   currentUser = user;
-  toast('✅ تم إنشاء حسابك في نزال Lor!');
-  onLoginSuccess();
+  toast('✅ تم إنشاء حسابك!');
+  updateDashboardUI();
+  showScreen('dashboard');
 }
 
 function handleLogin(e) {
@@ -569,42 +532,26 @@ function handleLogin(e) {
 
   const db = JSON.parse(localStorage.getItem('lor_users') || '{}');
   const user = db[username.toLowerCase()];
-
-  if (!user || user.pass !== btoa(pass)) {
-    return toast('❌ اسم المستخدم أو كلمة المرور غير صحيحة!');
-  }
+  if (!user || user.pass !== btoa(pass)) return toast('❌ اسم المستخدم أو كلمة المرور غير صحيحة!');
 
   localStorage.setItem('lor_user_session', user.username);
   currentUser = user;
   toast('مرحباً بك في نزال Lor!');
-  onLoginSuccess();
-}
-
-function logout() {
-  localStorage.removeItem('lor_user_session');
-  currentUser = null;
-  showScreen('auth');
-}
-
-function onLoginSuccess() {
-  document.getElementById('userHeaderChip').style.display = 'flex';
-  document.getElementById('logoutBtn').style.display = 'inline-flex';
-  document.getElementById('hUser').textContent = currentUser.username;
-  document.getElementById('hElo').textContent = currentUser.elo + ' ELO';
-
   updateDashboardUI();
   showScreen('dashboard');
 }
 
 function updateDashboardUI() {
-  if (!currentUser) return;
-  const r = getRank(currentUser.elo);
+  document.getElementById('userHeaderChip').style.display = 'flex';
+  document.getElementById('hUser').textContent = currentUser.username;
+  document.getElementById('hElo').textContent = currentUser.elo + ' ELO';
   document.getElementById('dElo').textContent = currentUser.elo;
   document.getElementById('dW').textContent = currentUser.wins;
   document.getElementById('dL').textContent = currentUser.losses;
   const tot = currentUser.wins + currentUser.losses;
   document.getElementById('dWR').textContent = tot > 0 ? Math.round((currentUser.wins/tot)*100) + '%' : '0%';
 
+  const r = getRank(currentUser.elo);
   document.getElementById('dRankCrest').textContent = r.icon;
   document.getElementById('dRankTitle').textContent = r.name;
   document.getElementById('dRankElo').textContent = 'ELO ' + currentUser.elo;
@@ -637,7 +584,7 @@ function renderCategories() {
 function renderRankTiersRows() {
   const container = document.getElementById('rankTiersRows');
   container.innerHTML = '';
-  const currentR = currentUser ? getRank(currentUser.elo) : RANKS[3];
+  const currentR = getRank(currentUser.elo);
 
   RANKS.slice().reverse().forEach(r => {
     const row = document.createElement('div');
@@ -700,7 +647,7 @@ function startMatchmaking() {
     document.getElementById('gameMatchmakingState').style.display = 'none';
     document.getElementById('gamePlayState').style.display = 'block';
     startArenaGame();
-  }, 2500);
+  }, 2200);
 }
 
 function startArenaGame() {
